@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ocean:#0A2540;--ocean-mid:#0E3A5C;--ocean-light:#1A5078;
+  --teal:#1D9E75;--teal-l:#5BB8A8;--teal-pale:#E1F5EE;
+  --amber:#F2A623;--amber-pale:#FFF8EC;
+  --coral:#E8593C;--coral-pale:#FEF0ED;
+  --purple:#7B4FBE;--purple-pale:#F0EEFF;
+  --sand:#F8F4EE;--sand-d:#EDE8E0;
+  --white:#fff;--text:#0A2540;--muted:#5A7A94;--light:#8AABB8;
+  --border:rgba(10,37,64,.08);
+  --shadow:0 2px 16px rgba(10,37,64,.08);
+  --shadow-lg:0 8px 40px rgba(10,37,64,.16);
+  --r:16px;--r-sm:10px;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:linear-gradient(135deg,#0A2540 0%,#0E3A5C 50%,#085041 100%);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  gap:24px;padding:24px;
+}
+
+/* ── PHONE SHELL ── */
+.phone{
+  width:390px;height:844px;
+  background:var(--sand);
+  border-radius:50px;
+  box-shadow:var(--shadow-lg),0 0 0 10px #111,0 0 0 13px #222;
+  overflow:hidden;position:relative;flex-shrink:0;
+  display:flex;flex-direction:column;
+}
+.status-bar{
+  background:var(--ocean);height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;flex-shrink:0;position:relative;z-index:5;
+}
+.status-bar::after{
+  content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:120px;height:26px;background:#000;border-radius:20px;
+}
+.s-time{color:#fff;font-size:13px;font-weight:600;}
+.s-icons{color:#fff;font-size:11px;opacity:.8;}
+
+/* ── SCREENS ── */
+.screen{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:none;flex-direction:column;background:var(--sand);
+}
+.screen.active{display:flex;}
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+.anim{animation:slideUp .4s cubic-bezier(.22,1,.36,1) both;}
+.anim2{animation:slideUp .4s cubic-bezier(.22,1,.36,1) .08s both;}
+.anim3{animation:slideUp .4s cubic-bezier(.22,1,.36,1) .16s both;}
+.anim4{animation:slideUp .4s cubic-bezier(.22,1,.36,1) .24s both;}
+.anim5{animation:slideUp .4s cubic-bezier(.22,1,.36,1) .32s both;}
+
+/* ── SCROLL ── */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  height:74px;background:var(--white);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:0 4px 8px;flex-shrink:0;
+}
+.bni{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:8px 14px;border-radius:14px;
+  transition:all .2s;border:none;background:none;
+  position:relative;
+}
+.bni:active{transform:scale(.9);}
+.bni.active{background:var(--teal-pale);}
+.bni-icon{font-size:21px;color:var(--light);transition:color .2s;}
+.bni-label{font-size:10px;color:var(--light);transition:color .2s;font-family:'DM Sans',sans-serif;}
+.bni.active .bni-icon,.bni.active .bni-label{color:var(--teal);}
+.bni-dot{
+  position:absolute;top:6px;right:10px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--coral);border:2px solid var(--white);
+}
+
+/* ── SELLER BOTTOM NAV (amber accent) ── */
+.bnav-seller .bni.active{background:var(--amber-pale);}
+.bnav-seller .bni.active .bni-icon,
+.bnav-seller .bni.active .bni-label{color:var(--amber);}
+
+/* ── OCEAN HEADER ── */
+.hdr{background:var(--ocean);padding:44px 20px 20px;flex-shrink:0;}
+.hdr-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--white);}
+.hdr-sub{font-size:12px;color:var(--teal-l);margin-top:3px;}
+
+/* ── CARDS ── */
+.card{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);}
+.card-ocean{background:linear-gradient(135deg,var(--ocean-mid),var(--ocean));border-radius:var(--r);padding:16px;color:var(--white);}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px 22px;border-radius:50px;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:500;cursor:pointer;border:none;
+  transition:all .18s;white-space:nowrap;
+}
+.btn:active{transform:scale(.95);}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#178a64;}
+.btn-amber{background:var(--amber);color:#fff;}
+.btn-ocean{background:var(--ocean);color:#fff;}
+.btn-ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal);}
+.btn-sand{background:var(--sand-d);color:var(--text);}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-full{width:100%;}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:10px;font-size:17px;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+.b-teal{background:var(--teal-pale);color:#085041;}
+.b-amber{background:var(--amber-pale);color:#8B5E0A;}
+.b-coral{background:var(--coral-pale);color:#8B2A16;}
+.b-ocean{background:rgba(10,37,64,.08);color:var(--ocean);}
+.b-purple{background:var(--purple-pale);color:#4a2d8f;}
+
+/* ── FORM ── */
+.fgroup{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.flabel{font-size:12px;font-weight:500;color:var(--muted);}
+.finput,.fselect,.ftextarea{
+  padding:11px 14px;border:1.5px solid var(--sand-d);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);
+  background:var(--white);outline:none;transition:border-color .18s;width:100%;
+}
+.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--teal);}
+.ftextarea{resize:vertical;min-height:80px;}
+.fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* ── TOGGLE ── */
+.tog{width:42px;height:23px;border-radius:12px;background:var(--sand-d);position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0;}
+.tog.on{background:var(--teal);}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.tog.on::after{transform:translateX(19px);}
+
+/* ── PARAM PILL ── */
+.ppill{flex:1;background:rgba(255,255,255,.12);border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;}
+.ppill-label{font-size:10px;color:var(--teal-l);font-weight:500;margin-bottom:2px;}
+.ppill-value{font-size:20px;font-weight:600;color:#fff;margin:2px 0;}
+.ppill-status{font-size:10px;color:var(--teal-l);}
+
+/* ── HEALTH BAR ── */
+.hbar{height:4px;background:var(--sand-d);border-radius:2px;overflow:hidden;margin-top:6px;}
+.hbar-fill{height:100%;border-radius:2px;transition:width .6s;}
+
+/* ── PRODUCT CARD (market) ── */
+.pcard{background:var(--white);border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s;}
+.pcard:active{transform:scale(.97);}
+.pcard-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:44px;}
+.pcard-info{padding:10px;}
+.pcard-name{font-size:12px;font-weight:500;color:var(--text);}
+.pcard-price{font-size:13px;color:var(--teal);font-weight:600;margin-top:2px;}
+.pcard-seller{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ── POST CARD ── */
+.post{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:12px;}
+.post-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.av-teal{background:var(--teal-pale);color:#085041;}
+.av-ocean{background:var(--ocean);color:#fff;}
+.av-amber{background:var(--amber-pale);color:#8B5E0A;}
+.av-purple{background:var(--purple-pale);color:#4a2d8f;}
+.post-name{font-size:13px;font-weight:500;}
+.post-meta{font-size:11px;color:var(--muted);}
+.post-text{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:12px;}
+.post-img{height:130px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:48px;}
+.post-actions{display:flex;gap:16px;}
+.post-act{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.post-act:active{color:var(--coral);}
+
+/* ── ALERT BANNER ── */
+.alert-b{
+  border-left:3px solid var(--amber);border-radius:0 10px 10px 0;
+  padding:10px 12px;display:flex;align-items:center;gap:10px;
+  cursor:pointer;margin-bottom:8px;
+}
+.alert-b.warn{background:#FFF8EC;}
+.alert-b.ok{background:#F0FFF8;border-color:var(--teal);}
+.alert-b.danger{background:var(--coral-pale);border-color:var(--coral);}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:absolute;inset:0;
+  background:rgba(10,37,64,.5);backdrop-filter:blur(6px);
+  z-index:100;align-items:flex-end;
+}
+.modal-overlay.open{display:flex;}
+.modal-sheet{
+  background:var(--white);border-radius:24px 24px 0 0;
+  padding:20px;width:100%;
+  max-height:88%;overflow-y:auto;
+  animation:slideUp .35s cubic-bezier(.22,1,.36,1);
+}
+.modal-handle{width:36px;height:4px;background:var(--sand-d);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-size:19px;font-weight:600;margin-bottom:16px;color:var(--text);}
+
+/* ── SELLER PRODUCT ROW ── */
+.sp-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+.sp-row:last-child{border-bottom:none;}
+.sp-thumb{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.sp-stock-bar{height:4px;background:var(--sand-d);border-radius:2px;overflow:hidden;margin-top:4px;width:80px;}
+.sp-stock-fill{height:100%;border-radius:2px;}
+
+/* ── SEARCH BAR ── */
+.sbar{background:rgba(255,255,255,.14);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-top:12px;}
+.sbar input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;background:transparent;flex:1;}
+.sbar input::placeholder{color:rgba(255,255,255,.5);}
+
+/* ── CAT PILLS ── */
+.cpills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.cpills::-webkit-scrollbar{display:none;}
+.cpill{white-space:nowrap;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--sand-d);background:var(--white);color:var(--muted);transition:all .2s;flex-shrink:0;}
+.cpill.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.cpill-ocean{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.7);background:transparent;}
+.cpill-ocean.on{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff;}
+
+/* ── FAB ── */
+.fab{
+  position:absolute;bottom:86px;right:18px;
+  width:52px;height:52px;border-radius:16px;
+  background:var(--teal);color:#fff;font-size:26px;
+  display:flex;align-items:center;justify-content:center;
+  border:none;cursor:pointer;
+  box-shadow:0 4px 18px rgba(29,158,117,.5);
+  transition:all .2s;z-index:10;
+}
+.fab:active{transform:scale(.9);}
+.fab-amber{background:var(--amber);box-shadow:0 4px 18px rgba(242,166,35,.5);}
+
+/* ── STAT MINI ── */
+.stat-mini{flex:1;text-align:center;}
+.stat-mini-val{font-size:20px;font-weight:600;color:#fff;}
+.stat-mini-lbl{font-size:10px;color:var(--teal-l);margin-top:2px;}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:12px 0;}
+
+/* ── COMPAT BADGE ── */
+.compat-ok{background:var(--teal-pale);color:#085041;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:3px;}
+.compat-warn{background:var(--amber-pale);color:#8B5E0A;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500;display:inline-flex;align-items:center;gap:3px;}
+
+/* ── TOAST ── */
+.toast{
+  position:absolute;bottom:86px;left:16px;right:16px;
+  background:var(--ocean);color:#fff;
+  padding:13px 16px;border-radius:14px;
+  font-size:13px;display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow-lg);z-index:200;
+  transform:translateY(60px);opacity:0;
+  transition:all .35s cubic-bezier(.22,1,.36,1);
+}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* ── ONBOARDING ── */
+.onb{background:var(--ocean);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;}
+.onb-emoji{font-size:72px;animation:float 3s ease-in-out infinite;margin-bottom:24px;}
+.onb-title{font-family:'DM Serif Display',serif;font-size:32px;color:#fff;margin-bottom:12px;line-height:1.2;}
+.onb-sub{font-size:14px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:36px;}
+
+/* ── MODE SWITCHER ── */
+.mode-bar{
+  display:flex;gap:0;margin:0;
+  background:rgba(255,255,255,.1);border-radius:12px;overflow:hidden;
+}
+.mode-btn{
+  flex:1;padding:9px 4px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  background:transparent;color:rgba(255,255,255,.6);transition:all .2s;
+}
+.mode-btn.on{background:rgba(255,255,255,.18);color:#fff;}
+
+/* ── CHART MINI ── */
+.mchart{display:flex;align-items:flex-end;gap:4px;height:48px;}
+.mbar{flex:1;border-radius:3px 3px 0 0;background:rgba(29,158,117,.3);transition:height .5s;}
+.mbar.hi{background:var(--teal);}
+
+/* ── SELLER ORDER CARD ── */
+.ocard{background:var(--white);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);border-left:4px solid transparent;margin-bottom:10px;}
+.ocard.pending{border-left-color:var(--amber);}
+.ocard.confirmed{border-left-color:var(--teal);}
+.ocard.shipped{border-left-color:var(--ocean);}
+
+/* ── SIDE PANEL (outside phone) ── */
+.side-panel{max-width:220px;display:flex;flex-direction:column;gap:12px;}
+.side-card{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.15);}
+.side-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;}
+.side-btn{
+  width:100%;padding:9px 12px;border-radius:10px;border:none;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);
+  font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;
+  text-align:left;transition:all .15s;margin-bottom:4px;
+}
+.side-btn:hover{background:rgba(255,255,255,.2);color:#fff;}
+.side-btn:active{transform:scale(.97);}
+.side-tag{font-size:10px;background:rgba(29,158,117,.3);color:var(--teal-l);padding:2px 7px;border-radius:20px;float:right;}
+.side-info{font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+/* ─ detail header ─ */
+.det-hdr{background:var(--ocean);padding:44px 20px 20px;flex-shrink:0;}
+.back-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:14px;transition:background .2s;}
+.back-btn:active{background:rgba(255,255,255,.25);}
+
+/* ── PROFILE TIER ── */
+.tier-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:6px;}
+
+/* ── STARS ── */
+.stars{color:var(--amber);font-size:13px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<!-- ═══ PHONE ═══════════════════════════════════════════════════════════════ -->
+<div class="phone">
+  <div class="status-bar">
+    <span class="s-time">9:41</span>
+    <span class="s-icons">●●● 100%</span>
+  </div>
+
+  <!-- ══════════════════════ ONBOARDING ══════════════════════ -->
+  <div class="screen active" id="s-onb" style="background:var(--ocean);">
+    <div class="onb">
+      <div class="onb-emoji">🐠</div>
+      <h1 class="onb-title">Bem-vindo ao AquaFlow</h1>
+      <p class="onb-sub">Gerencie seus aquários, compre produtos e conecte-se com a comunidade. Lojistas também podem vender aqui!</p>
+      <button class="btn btn-teal btn-full" style="font-size:15px;padding:16px;" onclick="go('s-home')">Sou aquarista</button>
+      <button class="btn btn-full" style="background:rgba(255,255,255,.12);color:#fff;margin-top:10px;font-size:15px;padding:16px;" onclick="go('s-seller-home')">Sou lojista / vendedor</button>
+      <p style="font-size:12px;color:rgba(255,255,255,.35);margin-top:16px;">Você pode alternar entre os modos a qualquer hora</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ HOME (AQUARISTA) ══════════════════════ -->
+  <div class="screen" id="s-home">
+    <div class="hdr anim">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div>
+          <div style="font-size:11px;color:var(--teal-l);font-weight:500;letter-spacing:.05em;">BOM DIA, CARLOS 👋</div>
+          <div class="hdr-title">AquaFlow</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="mode-bar">
+            <button class="mode-btn on">🐠 Aquarista</button>
+            <button class="mode-btn" onclick="go('s-seller-home')">🏪 Lojista</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="ppill" onclick="go('s-tank')">
+          <div class="ppill-label">pH</div><div class="ppill-value">7.2</div><div class="ppill-status">✓ Normal</div>
+        </div>
+        <div class="ppill" onclick="go('s-tank')">
+          <div class="ppill-label">Temp.</div><div class="ppill-value">26°</div><div class="ppill-status">✓ Ideal</div>
+        </div>
+        <div class="ppill" onclick="go('s-tank')">
+          <div class="ppill-label">NH₃</div><div class="ppill-value">0.0</div><div class="ppill-status">✓ Seguro</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Alert -->
+        <div class="alert-b warn anim2" onclick="go('s-tank')">
+          <div class="alert-dot" style="background:var(--amber);"></div>
+          <div style="flex:1;"><div style="font-size:12px;font-weight:500;color:#8B5E0A;">Troca de água em 2 dias</div><div style="font-size:11px;color:#A07030;">Aquário Principal · 240L Plantado</div></div>
+          <span style="color:var(--amber);">›</span>
+        </div>
+
+        <!-- Meus aquários -->
+        <div class="anim3">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:500;">Meus aquários</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-tanks')">Ver todos</span>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="card-ocean" style="flex:1;cursor:pointer;" onclick="go('s-tank')">
+              <div style="font-size:28px;margin-bottom:8px;">🌿</div>
+              <div style="font-size:13px;font-weight:500;">Principal</div>
+              <div style="font-size:11px;color:var(--teal-l);margin-top:2px;">240L · 12 esp.</div>
+              <div class="hbar" style="margin-top:10px;"><div class="hbar-fill" style="width:78%;background:var(--teal);"></div></div>
+              <div style="font-size:10px;color:var(--teal-l);margin-top:3px;">Saúde 78%</div>
+            </div>
+            <div class="card-ocean" style="flex:1;cursor:pointer;background:linear-gradient(135deg,#2A1A40,#3D2560);" onclick="go('s-tank')">
+              <div style="font-size:28px;margin-bottom:8px;">🐟</div>
+              <div style="font-size:13px;font-weight:500;">Escritório</div>
+              <div style="font-size:11px;color:rgba(200,180,255,.7);margin-top:2px;">60L · 4 esp.</div>
+              <div class="hbar" style="margin-top:10px;background:rgba(255,255,255,.15);"><div class="hbar-fill" style="width:92%;background:#B39DDB;"></div></div>
+              <div style="font-size:10px;color:rgba(200,180,255,.7);margin-top:3px;">Saúde 92%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IA rec -->
+        <div class="anim4">
+          <div style="background:linear-gradient(135deg,var(--ocean-mid),#085041);border-radius:var(--r);padding:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,.55);margin-bottom:8px;">🤖 IA recomenda para você</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-size:44px;">🐟</div>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:500;color:#fff;">Corydoras paleatus</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.65);margin:3px 0;">Compatível · Pacífico · 4–6 cm</div>
+                <span class="compat-ok">✓ Compatível com seu aquário</span>
+              </div>
+              <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;" onclick="go('s-product')">Ver</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market destaques -->
+        <div class="anim5">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:500;">Em destaque</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-market')">Ver loja</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div class="pcard" onclick="go('s-product')">
+              <div class="pcard-img" style="background:linear-gradient(135deg,#1B5E20,#4CAF50);">🌿</div>
+              <div class="pcard-info"><div class="pcard-name">Bucephalandra</div><div class="pcard-price">R$28</div><div class="pcard-seller">AquaRoots</div></div>
+            </div>
+            <div class="pcard" onclick="go('s-product')">
+              <div class="pcard-img" style="background:linear-gradient(135deg,#B71C1C,#FF5722);">🐠</div>
+              <div class="pcard-info"><div class="pcard-name">Betta Koi</div><div class="pcard-price">R$85</div><div class="pcard-seller">PeixesBR</div></div>
+            </div>
+            <div class="pcard" onclick="go('s-product')">
+              <div class="pcard-img" style="background:linear-gradient(135deg,#0D47A1,#1565C0);">💧</div>
+              <div class="pcard-info"><div class="pcard-name">Filtro Hang</div><div class="pcard-price">R$149</div><div class="pcard-seller">AquaShop</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community snippet -->
+        <div class="anim5">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:500;">Comunidade</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-community')">Ver feed</span>
+          </div>
+          <div class="post" style="margin-bottom:0;">
+            <div class="post-hdr">
+              <div class="avatar av-teal">MF</div>
+              <div><div class="post-name">Marina F.</div><div class="post-meta">2h · Plantados</div></div>
+            </div>
+            <p class="post-text">Discus em perfeitas condições depois de ajustar o pH para 6.5! 🎉</p>
+            <div class="post-actions"><button class="post-act">❤️ 34</button><button class="post-act">💬 7</button></div>
+          </div>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <button class="bni active" onclick="go('s-home')"><span class="bni-icon">🏠</span><span class="bni-label">Início</span></button>
+      <button class="bni" onclick="go('s-tanks')"><span class="bni-icon">🐟</span><span class="bni-label">Aquários</span></button>
+      <button class="bni" onclick="go('s-market')"><span class="bni-icon">🛒</span><span class="bni-label">Loja</span></button>
+      <button class="bni" onclick="go('s-community')"><span class="bni-icon">👥</span><span class="bni-label">Comunidade</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TANKS LIST ══════════════════════ -->
+  <div class="screen" id="s-tanks">
+    <div class="hdr anim"><div class="hdr-title">Meus aquários</div><div class="hdr-sub">3 aquários cadastrados</div></div>
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+        <div class="anim" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
+          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#0E3A5C,#1D9E75);display:flex;align-items:center;justify-content:center;font-size:26px;">🌿</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Aquário Principal</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">240L · Plantado · 12 espécies</div><div class="hbar"><div class="hbar-fill" style="width:78%;background:var(--teal);"></div></div></div>
+          <span class="badge b-teal">78%</span>
+        </div>
+        <div class="anim2" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
+          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#2A1A40,#7B1FA2);display:flex;align-items:center;justify-content:center;font-size:26px;">🐟</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Escritório</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">60L · Nano · 4 espécies</div><div class="hbar"><div class="hbar-fill" style="width:92%;background:var(--teal);"></div></div></div>
+          <span class="badge b-teal">92%</span>
+        </div>
+        <div class="anim3" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
+          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#0D47A1,#0288D1);display:flex;align-items:center;justify-content:center;font-size:26px;">🪸</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Marinho</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">120L · Marinho · 6 espécies</div><div class="hbar"><div class="hbar-fill" style="width:61%;background:var(--amber);"></div></div></div>
+          <span class="badge b-amber">61%</span>
+        </div>
+        <div class="anim4">
+          <button class="btn btn-full" style="border:2px dashed var(--sand-d);background:transparent;color:var(--muted);border-radius:var(--r-sm);" onclick="openModal('m-new-tank')">+ Cadastrar novo aquário</button>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <button class="bni" onclick="go('s-home')"><span class="bni-icon">🏠</span><span class="bni-label">Início</span></button>
+      <button class="bni active" onclick="go('s-tanks')"><span class="bni-icon">🐟</span><span class="bni-label">Aquários</span></button>
+      <button class="bni" onclick="go('s-market')"><span class="bni-icon">🛒</span><span class="bni-label">Loja</span></button>
+      <button class="bni" onclick="go('s-community')"><span class="bni-icon">👥</span><span class="bni-label">Comunidade</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TANK DETAIL ══════════════════════ -->
+  <div class="screen" id="s-tank">
+    <div class="det-hdr">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <span style="font-size:38px;">🌿</span>
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;">Aquário Principal</div>
+          <div style="font-size:12px;color:var(--teal-l);">240L · Plantado</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="ppill"><div class="ppill-label">pH</div><div class="ppill-value">7.2</div><div class="ppill-status">✓</div></div>
+        <div class="ppill"><div class="ppill-label">Temp</div><div class="ppill-value">26°C</div><div class="ppill-status">✓</div></div>
+        <div class="ppill"><div class="ppill-label">NH₃</div><div class="ppill-value">0.0</div><div class="ppill-status">✓</div></div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+        <div class="card anim">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:13px;font-weight:500;">pH — últimos 7 dias</span>
+            <span class="badge b-teal">Estável</span>
+          </div>
+          <div class="mchart">
+            <div class="mbar" style="height:55%;"></div><div class="mbar" style="height:62%;"></div>
+            <div class="mbar" style="height:58%;"></div><div class="mbar" style="height:70%;"></div>
+            <div class="mbar" style="height:65%;"></div><div class="mbar" style="height:68%;"></div>
+            <div class="mbar hi" style="height:72%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <span style="font-size:9px;color:var(--muted);">Seg</span><span style="font-size:9px;color:var(--muted);">Ter</span>
+            <span style="font-size:9px;color:var(--muted);">Qua</span><span style="font-size:9px;color:var(--muted);">Qui</span>
+            <span style="font-size:9px;color:var(--muted);">Sex</span><span style="font-size:9px;color:var(--muted);">Sáb</span>
+            <span style="font-size:9px;color:var(--teal);font-weight:500;">Hoje</span>
+          </div>
+        </div>
+        <div class="anim2">
+          <div class="alert-b warn"><div class="alert-dot" style="background:var(--amber);"></div><div style="flex:1;"><div style="font-size:12px;font-weight:500;color:#8B5E0A;">Troca de água</div><div style="font-size:11px;color:#A07030;">Em 2 dias · 30%</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+          <div class="alert-b ok"><div class="alert-dot" style="background:var(--teal);"></div><div style="flex:1;"><div style="font-size:12px;font-weight:500;color:#085041;">Alimentação</div><div style="font-size:11px;color:#0F6E56;">Hoje às 18h</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="anim3">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:13px;font-weight:500;">Espécies (12)</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="openModal('m-add-species')">+ Adicionar</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="background:var(--white);border:1px solid var(--sand-d);border-radius:20px;padding:5px 11px;font-size:12px;">🐟 Cardinal ×8</span>
+            <span style="background:var(--white);border:1px solid var(--sand-d);border-radius:20px;padding:5px 11px;font-size:12px;">🐠 Apisto. ×2</span>
+            <span style="background:var(--white);border:1px solid var(--sand-d);border-radius:20px;padding:5px 11px;font-size:12px;">🐡 Corydoras ×4</span>
+            <span style="background:var(--white);border:1px solid var(--sand-d);border-radius:20px;padding:5px 11px;font-size:12px;">🦐 Amano ×12</span>
+            <span style="background:var(--white);border:1px solid var(--sand-d);border-radius:20px;padding:5px 11px;font-size:12px;">🌿 Buce.</span>
+          </div>
+        </div>
+        <div class="anim4"><button class="btn btn-teal btn-full" onclick="openModal('m-params')">+ Registrar parâmetros</button></div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ MARKETPLACE ══════════════════════ -->
+  <div class="screen" id="s-market">
+    <div class="hdr">
+      <div class="anim"><div class="hdr-title">Loja</div></div>
+      <div class="sbar anim2"><span style="font-size:16px;color:rgba(255,255,255,.5);">🔍</span><input placeholder="Peixes, plantas, filtros, bombas..." /></div>
+    </div>
+    <div class="scroll">
+      <div style="padding:14px 16px;">
+        <div class="cpills anim" style="margin-bottom:14px;">
+          <div class="cpill on" onclick="setCat(this)">Tudo</div>
+          <div class="cpill" onclick="setCat(this)">Peixes</div>
+          <div class="cpill" onclick="setCat(this)">Plantas</div>
+          <div class="cpill" onclick="setCat(this)">Filtros</div>
+          <div class="cpill" onclick="setCat(this)">Bombas</div>
+          <div class="cpill" onclick="setCat(this)">Rações</div>
+          <div class="cpill" onclick="setCat(this)">Iluminação</div>
+          <div class="cpill" onclick="setCat(this)">Aquários</div>
+        </div>
+
+        <!-- IA Featured -->
+        <div class="anim2" style="background:linear-gradient(135deg,var(--ocean-mid),#085041);border-radius:var(--r);padding:16px;margin-bottom:14px;cursor:pointer;" onclick="go('s-product')">
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-bottom:8px;">🤖 IA recomenda para seu aquário</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:52px;">🐟</span>
+            <div>
+              <div style="font-size:16px;font-weight:500;color:#fff;">Corydoras paleatus</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.65);margin:3px 0;">Compatível · pH 6.5–7.5</div>
+              <span class="compat-ok">✓ Ideal para seu aquário</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products grid -->
+        <div class="anim3" style="font-size:13px;font-weight:500;margin-bottom:10px;">Disponíveis perto de você</div>
+        <div class="anim3" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#B71C1C,#FF5722);height:110px;">🐠</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Betta Splendens Koi</div>
+              <div class="pcard-price">R$ 85,00</div>
+              <div class="pcard-seller">PeixesBR · ⭐ 4.8</div>
+              <span class="compat-warn" style="margin-top:6px;display:inline-flex;">⚠ Verificar compat.</span>
+            </div>
+          </div>
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#1B5E20,#4CAF50);height:110px;">🌿</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Bucephalandra Green</div>
+              <div class="pcard-price">R$ 28,00</div>
+              <div class="pcard-seller">AquaRoots · ⭐ 5.0</div>
+              <span class="compat-ok" style="margin-top:6px;display:inline-flex;">✓ Compatível</span>
+            </div>
+          </div>
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#004D40,#00BFA5);height:110px;">🦐</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Crystal Red Shrimp</div>
+              <div class="pcard-price">R$ 12,00</div>
+              <div class="pcard-seller">ShrimpLab · ⭐ 4.9</div>
+              <span class="compat-ok" style="margin-top:6px;display:inline-flex;">✓ Compatível</span>
+            </div>
+          </div>
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#0D47A1,#1565C0);height:110px;">💧</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Filtro Hang-On 600L/h</div>
+              <div class="pcard-price">R$ 149,00</div>
+              <div class="pcard-seller">AquaShop · ⭐ 4.7</div>
+              <span class="compat-ok" style="margin-top:6px;display:inline-flex;">✓ Para 240L</span>
+            </div>
+          </div>
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#4A148C,#7B1FA2);height:110px;">💡</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Luminária LED 60cm</div>
+              <div class="pcard-price">R$ 189,00</div>
+              <div class="pcard-seller">AquaLight · ⭐ 4.6</div>
+              <span class="compat-ok" style="margin-top:6px;display:inline-flex;">✓ Para plantado</span>
+            </div>
+          </div>
+          <div class="pcard" onclick="go('s-product')" style="border-radius:var(--r);">
+            <div class="pcard-img" style="background:linear-gradient(135deg,#E65100,#FF6D00);height:110px;">🥩</div>
+            <div class="pcard-info">
+              <div class="pcard-name">Ração Tropical Flakes</div>
+              <div class="pcard-price">R$ 32,00</div>
+              <div class="pcard-seller">NutriAqua · ⭐ 4.5</div>
+              <span class="compat-ok" style="margin-top:6px;display:inline-flex;">✓ Para tetras</span>
+            </div>
+          </div>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <button class="bni" onclick="go('s-home')"><span class="bni-icon">🏠</span><span class="bni-label">Início</span></button>
+      <button class="bni" onclick="go('s-tanks')"><span class="bni-icon">🐟</span><span class="bni-label">Aquários</span></button>
+      <button class="bni active"><span class="bni-icon">🛒</span><span class="bni-label">Loja</span></button>
+      <button class="bni" onclick="go('s-community')"><span class="bni-icon">👥</span><span class="bni-label">Comunidade</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PRODUCT DETAIL ══════════════════════ -->
+  <div class="screen" id="s-product">
+    <div class="det-hdr">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span style="font-size:58px;">🐟</span>
+        <div>
+          <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff;line-height:1.2;">Corydoras<br>paleatus</div>
+          <div style="font-size:12px;color:var(--teal-l);margin-top:3px;">Peixe de fundo · Pacífico</div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+        <div class="card anim" style="background:var(--teal-pale);border:1px solid rgba(29,158,117,.2);">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px;">🤖</span>
+            <div><div style="font-size:13px;font-weight:500;color:#085041;">Compatível com seu aquário!</div><div style="font-size:12px;color:#0F6E56;margin-top:1px;">pH e temperatura dentro do ideal. Cardinal tetras são bons companheiros.</div></div>
+          </div>
+        </div>
+        <div class="card anim2">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+            <div><div style="font-size:24px;font-weight:600;color:var(--teal);">R$ 24,00</div><div style="font-size:11px;color:var(--muted);">por unidade · mín. 3</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:500;">PeixesBR</div><div class="stars">★★★★★</div><div style="font-size:11px;color:var(--muted);">4.9 · 234 vendas</div></div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Entrega local (SP)</span><span style="font-size:12px;font-weight:500;">Grátis · 1–2 dias</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Envio especializado</span><span style="font-size:12px;font-weight:500;">R$25 · 48–72h</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Estoque</span><span style="font-size:12px;font-weight:500;">23 disponíveis</span></div>
+          </div>
+        </div>
+        <div class="card anim3">
+          <div style="font-size:13px;font-weight:500;margin-bottom:10px;">Especificações</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">pH ideal</span><span style="font-size:12px;font-weight:500;color:var(--teal);">6.5 – 7.5</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Temperatura</span><span style="font-size:12px;font-weight:500;color:var(--teal);">22 – 26°C</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Volume mínimo</span><span style="font-size:12px;font-weight:500;">60L</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:var(--muted);">Comportamento</span><span style="font-size:12px;font-weight:500;">Pacífico, cardume</span></div>
+          </div>
+        </div>
+        <div class="anim4" style="display:flex;gap:10px;">
+          <button style="width:48px;height:48px;border-radius:12px;background:var(--sand-d);border:none;font-size:20px;cursor:pointer;">♡</button>
+          <button class="btn btn-teal btn-full" onclick="openModal('m-checkout')">Adicionar ao carrinho</button>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ COMMUNITY ══════════════════════ -->
+  <div class="screen" id="s-community">
+    <div class="hdr">
+      <div class="anim"><div class="hdr-title">Comunidade</div></div>
+      <div class="cpills anim2" style="margin-top:12px;">
+        <div class="cpill cpill-ocean on" onclick="setCat(this)">Feed</div>
+        <div class="cpill cpill-ocean" onclick="setCat(this)">Plantados</div>
+        <div class="cpill cpill-ocean" onclick="setCat(this)">Marinho</div>
+        <div class="cpill cpill-ocean" onclick="setCat(this)">Discus</div>
+        <div class="cpill cpill-ocean" onclick="setCat(this)">Iniciantes</div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;">
+        <div class="post anim">
+          <div class="post-hdr">
+            <div class="avatar av-teal">MF</div>
+            <div style="flex:1;"><div class="post-name">Marina F.</div><div class="post-meta">2h · Plantados</div></div>
+            <span class="badge b-teal">Seguindo</span>
+          </div>
+          <p class="post-text">Discus em perfeitas condições depois de ajustar o pH para 6.5! Demorei 3 semanas mas valeu 🎉</p>
+          <div class="post-img" style="background:linear-gradient(135deg,#0E3A5C,#1D9E75);">🌿🐠🌱</div>
+          <div class="post-actions"><button class="post-act">❤️ 34</button><button class="post-act">💬 7 comentários</button><button class="post-act">↗</button></div>
+        </div>
+        <div class="post anim2">
+          <div class="post-hdr">
+            <div class="avatar av-ocean">RB</div>
+            <div><div class="post-name">Roberto B.</div><div class="post-meta">5h · Marinho</div></div>
+          </div>
+          <p class="post-text">Salinidade entre 1.024–1.026 é o segredo! Alguém usa dosadora automática?</p>
+          <div class="post-actions"><button class="post-act">❤️ 18</button><button class="post-act">💬 12 comentários</button><button class="post-act">↗</button></div>
+        </div>
+        <div class="post anim3">
+          <div class="post-hdr">
+            <div class="avatar av-amber">JS</div>
+            <div style="flex:1;"><div class="post-name">Julia S.</div><div class="post-meta">1d · Iniciantes</div></div>
+            <span class="badge b-amber">Especialista</span>
+          </div>
+          <p class="post-text">Para iniciantes: NUNCA adicione peixe antes de completar o ciclo do nitrogênio! Demorei 6 semanas no primeiro aquário 🔬</p>
+          <div class="post-actions"><button class="post-act">❤️ 92</button><button class="post-act">💬 31 comentários</button><button class="post-act">↗</button></div>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+    </div>
+    <button class="fab" onclick="openModal('m-new-post')">+</button>
+    <div class="bnav">
+      <button class="bni" onclick="go('s-home')"><span class="bni-icon">🏠</span><span class="bni-label">Início</span></button>
+      <button class="bni" onclick="go('s-tanks')"><span class="bni-icon">🐟</span><span class="bni-label">Aquários</span></button>
+      <button class="bni" onclick="go('s-market')"><span class="bni-icon">🛒</span><span class="bni-label">Loja</span></button>
+      <button class="bni active"><span class="bni-icon">👥</span><span class="bni-label">Comunidade</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ PROFILE ══════════════════════ -->
+  <div class="screen" id="s-profile">
+    <div class="hdr" style="text-align:center;padding-bottom:24px;">
+      <div style="width:72px;height:72px;border-radius:24px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;margin:0 auto 12px;">CL</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;">Carlos Lima</div>
+      <div style="font-size:12px;color:var(--teal-l);margin-top:3px;">Aquarista há 6 anos · SP</div>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;">
+        <div class="stat-mini"><div class="stat-mini-val">3</div><div class="stat-mini-lbl">Aquários</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">22</div><div class="stat-mini-lbl">Espécies</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">48</div><div class="stat-mini-lbl">Posts</div></div>
+        <div class="stat-mini"><div class="stat-mini-val">127</div><div class="stat-mini-lbl">Seguidores</div></div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+        <div class="card anim" style="background:linear-gradient(135deg,var(--ocean-mid),var(--ocean));color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:10px;color:var(--teal-l);font-weight:500;letter-spacing:.04em;margin-bottom:3px;">PLANO ATUAL</div>
+              <div style="font-size:20px;font-weight:600;">Free</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;">2/2 aquários usados</div>
+            </div>
+            <button class="btn btn-teal btn-sm">Upgrade Premium</button>
+          </div>
+          <div style="height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin-top:12px;overflow:hidden;">
+            <div style="width:100%;height:100%;background:var(--teal);border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Virar lojista CTA -->
+        <div class="card anim2" style="background:linear-gradient(135deg,#2A1505,#6D3500);cursor:pointer;" onclick="go('s-seller-home')">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:36px;">🏪</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:500;color:#fff;">Você tem produtos para vender?</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;">Abra sua loja no AquaFlow e venda para +8 mil aquaristas</div>
+            </div>
+            <span style="color:var(--amber);font-size:20px;">›</span>
+          </div>
+        </div>
+
+        <div class="card anim3" style="padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="go('s-tanks')">
+            <span style="font-size:20px;">🐠</span><span style="font-size:14px;flex:1;">Meus aquários</span><span style="color:var(--light);">›</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+            <span style="font-size:20px;">🛍️</span><span style="font-size:14px;flex:1;">Meus pedidos</span><span style="color:var(--light);">›</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+            <span style="font-size:20px;">🔔</span><span style="font-size:14px;flex:1;">Notificações</span><span class="bni-dot" style="position:relative;top:0;right:0;"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;" onclick="go('s-seller-home')">
+            <span style="font-size:20px;">🏪</span><span style="font-size:14px;flex:1;">Minha loja</span><span class="badge b-teal">Novo</span>
+          </div>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+    <div class="bnav">
+      <button class="bni" onclick="go('s-home')"><span class="bni-icon">🏠</span><span class="bni-label">Início</span></button>
+      <button class="bni" onclick="go('s-tanks')"><span class="bni-icon">🐟</span><span class="bni-label">Aquários</span></button>
+      <button class="bni" onclick="go('s-market')"><span class="bni-icon">🛒</span><span class="bni-label">Loja</span></button>
+      <button class="bni" onclick="go('s-community')"><span class="bni-icon">👥</span><span class="bni-label">Comunidade</span></button>
+      <button class="bni active"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SELLER HOME ══════════════════════ -->
+  <div class="screen" id="s-seller-home">
+    <div class="hdr" style="background:linear-gradient(135deg,#2A1505,#6D3500);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;color:rgba(255,200,100,.7);font-weight:500;letter-spacing:.04em;">PAINEL DO LOJISTA</div>
+          <div class="hdr-title">PeixesBR 🏪</div>
+        </div>
+        <div class="mode-bar" style="background:rgba(255,255,255,.1);">
+          <button class="mode-btn" onclick="go('s-home')">🐠 Aquarista</button>
+          <button class="mode-btn on">🏪 Lojista</button>
+        </div>
+      </div>
+      <!-- Stats row -->
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:600;color:#fff;">R$4.380</div>
+          <div style="font-size:10px;color:rgba(255,200,100,.7);">Este mês</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:600;color:#fff;">3</div>
+          <div style="font-size:10px;color:rgba(255,200,100,.7);">Pedidos</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:600;color:#fff;">12</div>
+          <div style="font-size:10px;color:rgba(255,200,100,.7);">Produtos</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:18px;font-weight:600;color:#fff;">4.9⭐</div>
+          <div style="font-size:10px;color:rgba(255,200,100,.7);">Nota</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Quick actions -->
+        <div class="anim" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="btn btn-amber btn-full" style="border-radius:var(--r-sm);padding:14px;" onclick="openModal('m-new-product')">
+            <span style="font-size:20px;">📦</span> Novo produto
+          </button>
+          <button class="btn btn-full" style="background:var(--ocean);color:#fff;border-radius:var(--r-sm);padding:14px;" onclick="go('s-seller-orders')">
+            <span style="font-size:20px;">🛒</span> Ver pedidos <span style="background:var(--coral);color:#fff;font-size:10px;padding:2px 6px;border-radius:20px;margin-left:4px;">3</span>
+          </button>
+        </div>
+
+        <!-- Pedidos pendentes -->
+        <div class="anim2">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:500;">Pedidos pendentes</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-seller-orders')">Ver todos</span>
+          </div>
+          <div class="ocard pending">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div><span style="font-size:13px;font-weight:500;">#0041</span><span style="font-size:11px;color:var(--muted);margin-left:8px;">Agora</span></div>
+              <span class="badge b-amber">Pendente</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <div style="background:var(--sand);border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:5px;">🐡 Corydoras ×3</div>
+              <div style="background:var(--sand);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted);">📦 Envio especializado</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-size:15px;font-weight:600;">R$ 97</div><div style="font-size:11px;color:var(--muted);">Carlos L.</div></div>
+              <button class="btn btn-teal btn-sm" onclick="showToast('✓ Pedido #0041 confirmado!')">✓ Confirmar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produtos -->
+        <div class="anim3">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:500;">Meus produtos</span>
+            <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-seller-products')">Gerenciar</span>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div id="quick-products"></div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card anim4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:13px;font-weight:500;">Vendas esta semana</span>
+            <span class="badge b-teal">+18%</span>
+          </div>
+          <div class="mchart" style="height:60px;">
+            <div class="mbar" style="height:42%;"></div><div class="mbar" style="height:58%;"></div>
+            <div class="mbar" style="height:50%;"></div><div class="mbar" style="height:70%;"></div>
+            <div class="mbar" style="height:62%;"></div><div class="mbar" style="height:80%;"></div>
+            <div class="mbar hi" style="height:95%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:5px;">
+            <span style="font-size:9px;color:var(--muted);">Seg</span><span style="font-size:9px;color:var(--muted);">Ter</span>
+            <span style="font-size:9px;color:var(--muted);">Qua</span><span style="font-size:9px;color:var(--muted);">Qui</span>
+            <span style="font-size:9px;color:var(--muted);">Sex</span><span style="font-size:9px;color:var(--muted);">Sáb</span>
+            <span style="font-size:9px;color:var(--teal);font-weight:500;">Hoje</span>
+          </div>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+
+    <div class="bnav bnav-seller">
+      <button class="bni active" onclick="go('s-seller-home')"><span class="bni-icon">📊</span><span class="bni-label">Painel</span></button>
+      <button class="bni" onclick="go('s-seller-products')"><span class="bni-icon">📦</span><span class="bni-label">Produtos</span></button>
+      <button class="bni" onclick="go('s-seller-orders')"><span class="bni-icon">🛒</span><span class="bni-label">Pedidos</span><div class="bni-dot"></div></button>
+      <button class="bni" onclick="go('s-seller-stock')"><span class="bni-icon">🗃️</span><span class="bni-label">Estoque</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SELLER PRODUCTS ══════════════════════ -->
+  <div class="screen" id="s-seller-products">
+    <div class="hdr" style="background:linear-gradient(135deg,#2A1505,#6D3500);">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="hdr-title">Produtos</div><div class="hdr-sub" id="prod-count">12 produtos ativos</div></div>
+        <button class="btn btn-amber btn-sm" onclick="openModal('m-new-product')">+ Novo</button>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;">
+        <div style="background:var(--white);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;box-shadow:var(--shadow);">
+          <span style="font-size:16px;color:var(--muted);">🔍</span>
+          <input id="prod-search" placeholder="Buscar produto..." style="border:none;outline:none;font-size:14px;color:var(--text);background:transparent;flex:1;font-family:'DM Sans',sans-serif;" oninput="filterSProd(this.value)">
+        </div>
+        <div id="seller-products-list"></div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+    <div class="bnav bnav-seller">
+      <button class="bni" onclick="go('s-seller-home')"><span class="bni-icon">📊</span><span class="bni-label">Painel</span></button>
+      <button class="bni active"><span class="bni-icon">📦</span><span class="bni-label">Produtos</span></button>
+      <button class="bni" onclick="go('s-seller-orders')"><span class="bni-icon">🛒</span><span class="bni-label">Pedidos</span></button>
+      <button class="bni" onclick="go('s-seller-stock')"><span class="bni-icon">🗃️</span><span class="bni-label">Estoque</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SELLER ORDERS ══════════════════════ -->
+  <div class="screen" id="s-seller-orders">
+    <div class="hdr" style="background:linear-gradient(135deg,#2A1505,#6D3500);">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div class="hdr-title">Pedidos</div>
+      <div style="display:flex;gap:8px;margin-top:12px;overflow-x:auto;scrollbar-width:none;">
+        <button class="cpill cpill-ocean on btn-sm" onclick="filterOrds('all',this)" style="border-radius:20px;border:none;cursor:pointer;">Todos</button>
+        <button class="cpill cpill-ocean btn-sm" onclick="filterOrds('pending',this)" style="border-radius:20px;border:none;cursor:pointer;">⏳ Pendentes</button>
+        <button class="cpill cpill-ocean btn-sm" onclick="filterOrds('confirmed',this)" style="border-radius:20px;border:none;cursor:pointer;">✓ Confirmados</button>
+        <button class="cpill cpill-ocean btn-sm" onclick="filterOrds('shipped',this)" style="border-radius:20px;border:none;cursor:pointer;">🚚 Enviados</button>
+      </div>
+    </div>
+    <div class="scroll"><div style="padding:16px;" id="orders-render"></div></div>
+    <div class="bnav bnav-seller">
+      <button class="bni" onclick="go('s-seller-home')"><span class="bni-icon">📊</span><span class="bni-label">Painel</span></button>
+      <button class="bni" onclick="go('s-seller-products')"><span class="bni-icon">📦</span><span class="bni-label">Produtos</span></button>
+      <button class="bni active"><span class="bni-icon">🛒</span><span class="bni-label">Pedidos</span></button>
+      <button class="bni" onclick="go('s-seller-stock')"><span class="bni-icon">🗃️</span><span class="bni-label">Estoque</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SELLER STOCK ══════════════════════ -->
+  <div class="screen" id="s-seller-stock">
+    <div class="hdr" style="background:linear-gradient(135deg,#2A1505,#6D3500);">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div class="hdr-title">Estoque</div>
+    </div>
+    <div class="scroll">
+      <div style="padding:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div class="card" style="text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--amber);">2</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Estoque crítico</div></div>
+          <div class="card" style="text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--teal);">347</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Total em estoque</div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div id="stock-list"></div>
+        </div>
+        <div style="height:8px;"></div>
+      </div>
+    </div>
+    <div class="bnav bnav-seller">
+      <button class="bni" onclick="go('s-seller-home')"><span class="bni-icon">📊</span><span class="bni-label">Painel</span></button>
+      <button class="bni" onclick="go('s-seller-products')"><span class="bni-icon">📦</span><span class="bni-label">Produtos</span></button>
+      <button class="bni" onclick="go('s-seller-orders')"><span class="bni-icon">🛒</span><span class="bni-label">Pedidos</span></button>
+      <button class="bni active"><span class="bni-icon">🗃️</span><span class="bni-label">Estoque</span></button>
+      <button class="bni" onclick="go('s-profile')"><span class="bni-icon">👤</span><span class="bni-label">Perfil</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ MODALS ══════════════════════ -->
+
+  <!-- Register params -->
+  <div class="modal-overlay" id="m-params" onclick="closeModal(event,'m-params')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Registrar parâmetros</div>
+      <div class="fgroup"><label class="flabel">pH atual</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="range" min="60" max="90" value="72" style="flex:1;accent-color:var(--teal);" oninput="document.getElementById('pv').textContent=(this.value/10).toFixed(1)">
+          <span id="pv" style="font-size:16px;font-weight:600;color:var(--teal);min-width:32px;">7.2</span>
+        </div>
+      </div>
+      <div class="fgroup"><label class="flabel">Temperatura (°C)</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="range" min="20" max="32" value="26" style="flex:1;accent-color:var(--teal);" oninput="document.getElementById('tv').textContent=this.value+'°C'">
+          <span id="tv" style="font-size:16px;font-weight:600;color:var(--teal);min-width:44px;">26°C</span>
+        </div>
+      </div>
+      <div class="fgroup"><label class="flabel">Amônia NH₃</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="range" min="0" max="20" value="0" style="flex:1;accent-color:var(--teal);" oninput="document.getElementById('nv').textContent=(this.value/10).toFixed(1)">
+          <span id="nv" style="font-size:16px;font-weight:600;color:var(--teal);min-width:32px;">0.0</span>
+        </div>
+      </div>
+      <button class="btn btn-teal btn-full" style="margin-top:8px;" onclick="closeModalById('m-params');showToast('✓ Parâmetros registrados!')">Salvar</button>
+    </div>
+  </div>
+
+  <!-- New tank -->
+  <div class="modal-overlay" id="m-new-tank" onclick="closeModal(event,'m-new-tank')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Novo aquário</div>
+      <div class="fgroup"><label class="flabel">Nome</label><input class="finput" placeholder="Ex: Aquário da sala"></div>
+      <div class="fgroup"><label class="flabel">Volume (litros)</label><input class="finput" type="number" placeholder="Ex: 120"></div>
+      <div class="fgroup"><label class="flabel">Tipo</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <div class="cpill on" onclick="setCat(this)" style="font-size:12px;">Plantado</div>
+          <div class="cpill" onclick="setCat(this)" style="font-size:12px;">Marinho</div>
+          <div class="cpill" onclick="setCat(this)" style="font-size:12px;">Ciclídeos</div>
+          <div class="cpill" onclick="setCat(this)" style="font-size:12px;">Nano</div>
+        </div>
+      </div>
+      <button class="btn btn-teal btn-full" style="margin-top:8px;" onclick="closeModalById('m-new-tank');showToast('🐠 Aquário cadastrado!')">Cadastrar</button>
+    </div>
+  </div>
+
+  <!-- Add species -->
+  <div class="modal-overlay" id="m-add-species" onclick="closeModal(event,'m-add-species')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Adicionar espécie</div>
+      <div style="background:var(--sand);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <span style="font-size:16px;color:var(--muted);">🔍</span>
+        <input placeholder="Buscar espécie..." style="border:none;outline:none;font-size:14px;background:transparent;flex:1;font-family:'DM Sans',sans-serif;">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0;max-height:260px;overflow-y:auto;">
+        ${[['🐟','Corydoras paleatus','pH 6.5–7.5 · Pacífico','ok'],['🐡','Otocinclus affinis','pH 6.0–7.5 · Algívoro','ok'],['🦐','Neocaridina davidi','pH 6.5–8.0 · Camarão','ok'],['🐠','Betta splendens','pH 6.0–7.5 · Agressivo','warn']].map(([e,n,s,t])=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="closeModalById('m-add-species');showToast('✓ ${n} adicionado!')">
+          <span style="font-size:28px;">${e}</span>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:500;">${n}</div><div style="font-size:11px;color:var(--muted);">${s}</div></div>
+          <span class="${t==='ok'?'compat-ok':'compat-warn'}">${t==='ok'?'✓ OK':'⚠ Verificar'}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout -->
+  <div class="modal-overlay" id="m-checkout" onclick="closeModal(event,'m-checkout')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Finalizar compra</div>
+      <div style="background:var(--sand);border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <span style="font-size:32px;">🐟</span>
+        <div><div style="font-size:13px;font-weight:500;">Corydoras paleatus ×3</div><div style="font-size:12px;color:var(--muted);">PeixesBR · Envio especializado</div></div>
+        <div style="margin-left:auto;font-size:15px;font-weight:600;color:var(--teal);">R$72</div>
+      </div>
+      <div class="fgroup"><label class="flabel">Forma de entrega</label>
+        <div style="display:flex;gap:8px;">
+          <div class="cpill on" onclick="setCat(this)">Envio especializado</div>
+          <div class="cpill" onclick="setCat(this)">Retirada</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin:12px 0;">
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:var(--muted);">Subtotal</span><span style="font-size:13px;">R$ 72,00</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:var(--muted);">Frete especializado</span><span style="font-size:13px;">R$ 25,00</span></div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;"><span style="font-size:15px;font-weight:600;">Total</span><span style="font-size:15px;font-weight:600;color:var(--teal);">R$ 97,00</span></div>
+      </div>
+      <button class="btn btn-teal btn-full" style="padding:15px;" onclick="closeModalById('m-checkout');showToast('🎉 Pedido realizado! Aguardando confirmação.')">Confirmar pedido</button>
+    </div>
+  </div>
+
+  <!-- New post -->
+  <div class="modal-overlay" id="m-new-post" onclick="closeModal(event,'m-new-post')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nova publicação</div>
+      <div class="fgroup"><textarea class="ftextarea" placeholder="Compartilhe uma experiência, dica ou foto do seu aquário..."></textarea></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-sand btn-sm" style="flex:1;">📷 Foto</button>
+        <button class="btn btn-sand btn-sm" style="flex:1;">🐠 Aquário</button>
+        <button class="btn btn-sand btn-sm" style="flex:1;"># Grupo</button>
+      </div>
+      <button class="btn btn-teal btn-full" onclick="closeModalById('m-new-post');showToast('🚀 Post publicado!')">Publicar</button>
+    </div>
+  </div>
+
+  <!-- NEW PRODUCT MODAL (seller) -->
+  <div class="modal-overlay" id="m-new-product" onclick="closeModal(event,'m-new-product')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()" style="max-height:92%;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Cadastrar produto</div>
+
+      <!-- Type select -->
+      <div class="fgroup">
+        <label class="flabel">Tipo de produto</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:2px;" id="np-type-sel">
+          <button class="cpill on" data-type="fish" onclick="selPType(this)">🐟 Peixe</button>
+          <button class="cpill" data-type="plant" onclick="selPType(this)">🌿 Planta</button>
+          <button class="cpill" data-type="shrimp" onclick="selPType(this)">🦐 Camarão</button>
+          <button class="cpill" data-type="equip" onclick="selPType(this)">💧 Filtro/Bomba</button>
+          <button class="cpill" data-type="food" onclick="selPType(this)">🥩 Ração</button>
+          <button class="cpill" data-type="light" onclick="selPType(this)">💡 Iluminação</button>
+          <button class="cpill" data-type="tank" onclick="selPType(this)">🪣 Aquário</button>
+          <button class="cpill" data-type="other" onclick="selPType(this)">📦 Outro</button>
+        </div>
+      </div>
+
+      <!-- Name + emoji -->
+      <div class="fgrid2">
+        <div class="fgroup"><label class="flabel">Nome do produto *</label><input class="finput" id="np-name" placeholder="Ex: Filtro Canister 1200L/h"></div>
+        <div class="fgroup"><label class="flabel">Emoji</label><input class="finput" id="np-emoji" placeholder="💧" maxlength="2" style="font-size:22px;"></div>
+      </div>
+
+      <!-- Scientific (shown for fish/plant/shrimp) -->
+      <div class="fgroup" id="np-sci-group">
+        <label class="flabel">Nome científico</label>
+        <input class="finput" id="np-sci" placeholder="Ex: Corydoras paleatus">
+      </div>
+
+      <div class="fgroup"><label class="flabel">Descrição</label><textarea class="ftextarea" id="np-desc" placeholder="Descreva o produto: origem, características, compatibilidade..."></textarea></div>
+
+      <!-- Price + stock + min -->
+      <div class="fgrid3">
+        <div class="fgroup"><label class="flabel">Preço (R$) *</label><input class="finput" id="np-price" type="number" placeholder="0,00"></div>
+        <div class="fgroup"><label class="flabel">Estoque *</label><input class="finput" id="np-stock" type="number" placeholder="0"></div>
+        <div class="fgroup"><label class="flabel">Mín. pedido</label><input class="finput" id="np-min" type="number" value="1"></div>
+      </div>
+
+      <!-- Species params (fish/plant/shrimp) -->
+      <div id="np-species-params" style="background:var(--sand);border-radius:12px;padding:14px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:10px;">Parâmetros da espécie — para o motor de compatibilidade IA</div>
+        <div class="fgrid2" style="margin-bottom:10px;">
+          <div class="fgroup"><label class="flabel">pH mínimo</label><input class="finput" id="np-ph-min" type="number" step="0.1" placeholder="6.0"></div>
+          <div class="fgroup"><label class="flabel">pH máximo</label><input class="finput" id="np-ph-max" type="number" step="0.1" placeholder="7.5"></div>
+          <div class="fgroup"><label class="flabel">Temp. mín (°C)</label><input class="finput" id="np-t-min" type="number" placeholder="22"></div>
+          <div class="fgroup"><label class="flabel">Temp. máx (°C)</label><input class="finput" id="np-t-max" type="number" placeholder="28"></div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;"><button class="tog" id="np-aggr" onclick="this.classList.toggle('on')"></button><span style="font-size:12px;">Espécie agressiva</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><button class="tog" id="np-cold" onclick="this.classList.toggle('on')"></button><span style="font-size:12px;">Envio refrigerado</span></div>
+        </div>
+      </div>
+
+      <!-- Delivery types -->
+      <div class="fgroup">
+        <label class="flabel">Formas de entrega disponíveis</label>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-pale);font-size:12px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--teal);"> Local</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--sand-d);font-size:12px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--teal);"> Retirada</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-pale);font-size:12px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--teal);"> Envio especializado</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--sand-d);font-size:12px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--teal);"> Agendado</label>
+        </div>
+      </div>
+
+      <!-- Photo upload -->
+      <div class="fgroup">
+        <label class="flabel">Fotos do produto</label>
+        <div style="border:2px dashed var(--sand-d);border-radius:12px;padding:24px;text-align:center;cursor:pointer;background:var(--sand);transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)'" onmouseout="this.style.borderColor='var(--sand-d)'" onclick="showToast('📷 Selecione uma imagem do seu dispositivo')">
+          <div style="font-size:32px;margin-bottom:8px;">📷</div>
+          <div style="font-size:13px;color:var(--muted);">Clique para adicionar fotos ou <strong style="color:var(--teal);">arraste aqui</strong></div>
+          <div style="font-size:11px;color:var(--light);margin-top:6px;">PNG, JPG · até 5MB · máximo 5 fotos</div>
+        </div>
+      </div>
+
+      <!-- Publish toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--sand);padding:12px 14px;border-radius:10px;margin-bottom:4px;">
+        <span style="font-size:13px;">Publicar imediatamente no marketplace</span>
+        <button class="tog on" id="np-publish" onclick="this.classList.toggle('on')"></button>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn btn-sand" style="flex:1;" onclick="closeModalById('m-new-product')">Cancelar</button>
+        <button class="btn btn-sand" style="flex:1;" onclick="saveNewProductDraft()">💾 Rascunho</button>
+        <button class="btn btn-amber" style="flex:2;" onclick="publishNewProduct()">🚀 Publicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PRODUCT MODAL -->
+  <div class="modal-overlay" id="m-edit-product" onclick="closeModal(event,'m-edit-product')">
+    <div class="modal-sheet" onclick="e=>e.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="edit-p-title">Editar produto</div>
+      <div class="fgrid2">
+        <div class="fgroup"><label class="flabel">Nome</label><input class="finput" id="ep-name"></div>
+        <div class="fgroup"><label class="flabel">Emoji</label><input class="finput" id="ep-emoji" style="font-size:22px;" maxlength="2"></div>
+      </div>
+      <div class="fgrid2">
+        <div class="fgroup"><label class="flabel">Preço (R$)</label><input class="finput" id="ep-price" type="number"></div>
+        <div class="fgroup"><label class="flabel">Estoque</label><input class="finput" id="ep-stock" type="number"></div>
+      </div>
+      <div class="fgroup"><label class="flabel">Descrição</label><textarea class="ftextarea" id="ep-desc"></textarea></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--sand);padding:12px 14px;border-radius:10px;">
+        <span style="font-size:13px;">Produto ativo no marketplace</span>
+        <button class="tog on" id="ep-status" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn" style="background:var(--coral-pale);color:var(--coral);flex:1;" onclick="deleteSelProd()">🗑 Excluir</button>
+        <button class="btn btn-sand" style="flex:1;" onclick="closeModalById('m-edit-product')">Cancelar</button>
+        <button class="btn btn-teal" style="flex:2;" onclick="saveEditProd()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"><span id="t-icon">✓</span><span id="t-msg">OK</span></div>
+</div>
+
+<!-- ═══ SIDE NAV PANEL ═══════════════════════════════════════════════════════ -->
+<div class="side-panel">
+  <div class="side-card">
+    <div class="side-title">🗺 Navegação</div>
+    <button class="side-btn" onclick="go('s-onb')">Onboarding</button>
+    <div style="font-size:10px;color:rgba(255,255,255,.3);padding:4px 12px 2px;font-weight:500;letter-spacing:.05em;">AQUARISTA</div>
+    <button class="side-btn" onclick="go('s-home')">🏠 Home <span class="side-tag">aquarista</span></button>
+    <button class="side-btn" onclick="go('s-tanks')">🐟 Lista de aquários</button>
+    <button class="side-btn" onclick="go('s-tank')">🌿 Detalhe do aquário</button>
+    <button class="side-btn" onclick="go('s-market')">🛒 Marketplace</button>
+    <button class="side-btn" onclick="go('s-product')">📄 Detalhe do produto</button>
+    <button class="side-btn" onclick="go('s-community')">👥 Comunidade</button>
+    <button class="side-btn" onclick="go('s-profile')">👤 Perfil</button>
+    <div style="font-size:10px;color:rgba(255,255,255,.3);padding:8px 12px 2px;font-weight:500;letter-spacing:.05em;">LOJISTA</div>
+    <button class="side-btn" onclick="go('s-seller-home')">🏪 Painel do lojista <span class="side-tag">lojista</span></button>
+    <button class="side-btn" onclick="go('s-seller-products')">📦 Produtos da loja</button>
+    <button class="side-btn" onclick="go('s-seller-orders')">🛒 Pedidos da loja</button>
+    <button class="side-btn" onclick="go('s-seller-stock')">🗃️ Controle de estoque</button>
+  </div>
+  <div class="side-card">
+    <div class="side-title">💡 Dica</div>
+    <p class="side-info">No perfil do aquarista há um botão "<b style="color:#fff;">Minha loja</b>" que leva ao painel do lojista. O lojista pode também voltar para o modo aquarista pelo botão no topo.</p>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+let sellerProducts = [
+  {id:1,name:'Corydoras paleatus',emoji:'🐡',type:'fish',price:24,stock:23,sales:48,status:'active',sci:'Corydoras paleatus',desc:'Criados em cativeiro.'},
+  {id:2,name:'Betta Splendens Koi',emoji:'🐠',type:'fish',price:85,stock:5,sales:21,status:'active',sci:'Betta splendens',desc:'Alta qualidade.'},
+  {id:3,name:'Bucephalandra Green',emoji:'🌿',type:'plant',price:28,stock:15,sales:34,status:'active',sci:'Bucephalandra sp.',desc:'Em pedra lava.'},
+  {id:4,name:'Crystal Red Shrimp',emoji:'🦐',type:'shrimp',price:12,stock:50,sales:67,status:'active',sci:'Caridina cantonensis',desc:'Grau A/B.'},
+  {id:5,name:'Filtro Hang-On 600L/h',emoji:'💧',type:'equip',price:149,stock:8,sales:14,status:'active',desc:'Para até 250L.'},
+  {id:6,name:'Anubias Nana',emoji:'🌱',type:'plant',price:18,stock:3,sales:29,status:'active',sci:'Anubias barteri',desc:'Robusta, iniciantes.'},
+  {id:7,name:'Cardinal Tetra',emoji:'🐟',type:'fish',price:8,stock:0,sales:142,status:'sold_out',sci:'Paracheirodon axelrodi',desc:'Em cardume.'},
+];
+
+let ordersData = [
+  {id:'0041',product:'Corydoras ×3',buyer:'Carlos L.',total:97,status:'pending',time:'Agora',emoji:'🐡',delivery:'Envio especializado'},
+  {id:'0040',product:'Betta Koi ×1',buyer:'Ana M.',total:110,status:'confirmed',time:'2h atrás',emoji:'🐠',delivery:'Entrega local'},
+  {id:'0039',product:'Bucephalandra ×2',buyer:'Pedro R.',total:56,status:'shipped',time:'Ontem',emoji:'🌿',delivery:'Envio especializado'},
+  {id:'0038',product:'Crystal Red ×10',buyer:'Julia S.',total:120,status:'shipped',time:'2 dias',emoji:'🦐',delivery:'Envio especializado'},
+  {id:'0037',product:'Filtro Hang ×1',buyer:'Marcos T.',total:149,status:'shipped',time:'3 dias',emoji:'💧',delivery:'Entrega local'},
+  {id:'0036',product:'Anubias ×3',buyer:'Renata K.',total:54,status:'pending',time:'1h atrás',emoji:'🌱',delivery:'Retirada'},
+  {id:'0035',product:'Cardinal ×12',buyer:'Thiago A.',total:96,status:'pending',time:'3h atrás',emoji:'🐟',delivery:'Entrega local'},
+];
+
+let history = ['s-onb'];
+let editingProdId = null;
+let currentOrderFilter = 'all';
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function go(id) {
+  const cur = document.querySelector('.screen.active');
+  const nxt = document.getElementById(id);
+  if (!nxt || cur === nxt) return;
+  cur.classList.remove('active');
+  nxt.classList.add('active');
+  history.push(id);
+  document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  if (id === 's-seller-products') renderSellerProducts(sellerProducts);
+  if (id === 's-seller-home') renderQuickProducts();
+  if (id === 's-seller-orders') renderOrders(currentOrderFilter);
+  if (id === 's-seller-stock') renderStock();
+}
+
+function goBack() {
+  if (history.length > 1) {
+    history.pop();
+    const prev = history[history.length - 1];
+    document.querySelector('.screen.active').classList.remove('active');
+    const t = document.getElementById(prev);
+    if (t) t.classList.add('active');
+  }
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(e, id) { if (e.target === document.getElementById(id)) closeModalById(id); }
+function closeModalById(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg, icon = '✓') {
+  const t = document.getElementById('toast');
+  document.getElementById('t-msg').textContent = msg;
+  document.getElementById('t-icon').textContent = icon;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── CATEGORY PILL ──────────────────────────────────────────────────────────
+function setCat(el) {
+  el.closest('.cpills, [id]').querySelectorAll('.cpill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── PRODUCT TYPE SELECT (modal) ────────────────────────────────────────────
+function selPType(btn) {
+  document.querySelectorAll('#np-type-sel .cpill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const hasSpecies = ['fish','plant','shrimp'].includes(btn.dataset.type);
+  const sciGroup = document.getElementById('np-sci-group');
+  const speciesParams = document.getElementById('np-species-params');
+  if (sciGroup) sciGroup.style.display = hasSpecies ? 'flex' : 'none';
+  if (speciesParams) speciesParams.style.display = hasSpecies ? 'block' : 'none';
+}
+
+// ── PUBLISH NEW PRODUCT ────────────────────────────────────────────────────
+function publishNewProduct() {
+  const name = (document.getElementById('np-name').value || '').trim();
+  const price = parseFloat(document.getElementById('np-price').value);
+  const stock = parseInt(document.getElementById('np-stock').value);
+  if (!name) { showToast('⚠ Preencha o nome do produto', '⚠'); return; }
+  if (!price || price <= 0) { showToast('⚠ Defina um preço válido', '⚠'); return; }
+  if (isNaN(stock) || stock < 0) { showToast('⚠ Defina o estoque', '⚠'); return; }
+  const typeBtn = document.querySelector('#np-type-sel .cpill.on');
+  const type = typeBtn ? typeBtn.dataset.type : 'other';
+  const newP = {
+    id: Date.now(), name, emoji: document.getElementById('np-emoji').value || '📦',
+    type, price, stock, sales: 0, status: 'active',
+    sci: document.getElementById('np-sci').value || '',
+    desc: document.getElementById('np-desc').value || '',
+  };
+  sellerProducts.unshift(newP);
+  closeModalById('m-new-product');
+  // Reset
+  ['np-name','np-emoji','np-sci','np-desc','np-price','np-stock','np-min','np-ph-min','np-ph-max','np-t-min','np-t-max'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  showToast('🚀 Produto publicado no marketplace!', '🚀');
+  go('s-seller-products');
+}
+
+function saveNewProductDraft() {
+  closeModalById('m-new-product');
+  showToast('💾 Rascunho salvo!', '💾');
+}
+
+// ── EDIT PRODUCT ────────────────────────────────────────────────────────────
+function editSelProd(id) {
+  const p = sellerProducts.find(x => x.id === id);
+  if (!p) return;
+  editingProdId = id;
+  document.getElementById('edit-p-title').textContent = 'Editar — ' + p.name;
+  document.getElementById('ep-name').value = p.name;
+  document.getElementById('ep-emoji').value = p.emoji;
+  document.getElementById('ep-price').value = p.price;
+  document.getElementById('ep-stock').value = p.stock;
+  document.getElementById('ep-desc').value = p.desc || '';
+  openModal('m-edit-product');
+}
+
+function saveEditProd() {
+  const p = sellerProducts.find(x => x.id === editingProdId);
+  if (!p) return;
+  p.name = document.getElementById('ep-name').value || p.name;
+  p.emoji = document.getElementById('ep-emoji').value || p.emoji;
+  p.price = parseFloat(document.getElementById('ep-price').value) || p.price;
+  p.stock = parseInt(document.getElementById('ep-stock').value) ?? p.stock;
+  p.desc = document.getElementById('ep-desc').value;
+  closeModalById('m-edit-product');
+  renderSellerProducts(sellerProducts);
+  showToast('✓ Produto atualizado!');
+}
+
+function deleteSelProd() {
+  if (!confirm('Excluir este produto?')) return;
+  sellerProducts = sellerProducts.filter(x => x.id !== editingProdId);
+  closeModalById('m-edit-product');
+  renderSellerProducts(sellerProducts);
+  showToast('🗑 Produto excluído', '🗑');
+}
+
+function toggleSelProd(id) {
+  const p = sellerProducts.find(x => x.id === id);
+  if (!p) return;
+  if (p.status === 'active') { p.status = 'paused'; showToast('⏸ Produto pausado'); }
+  else if (p.stock > 0) { p.status = 'active'; showToast('▶️ Produto ativado'); }
+  renderSellerProducts(sellerProducts);
+}
+
+// ── RENDER: SELLER PRODUCTS ────────────────────────────────────────────────
+const typeBg = t => ({fish:'#0E2A20',plant:'#0A2A1A',shrimp:'#0A2A20',equip:'#0A1A2A',food:'#2A1A0A',light:'#1A0A2A',tank:'#1A2A2A',other:'#2A2A2A'}[t] || '#1A1A1A');
+
+function renderSellerProducts(list) {
+  const el = document.getElementById('seller-products-list');
+  if (!el) return;
+  document.getElementById('prod-count').textContent = list.length + ' produtos';
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;"><div style="font-size:48px;margin-bottom:12px;">📦</div><div style="font-size:15px;font-weight:500;">Nenhum produto encontrado</div><div style="font-size:13px;color:var(--muted);margin-top:6px;">Cadastre seu primeiro produto!</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="card" style="margin-bottom:10px;padding:14px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="sp-thumb" style="background:${typeBg(p.type)}">${p.emoji}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+          ${p.sci ? `<div style="font-size:11px;color:var(--muted);font-style:italic;">${p.sci}</div>` : ''}
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+            <span style="font-size:13px;font-weight:600;color:var(--teal);">R$${p.price}</span>
+            <span style="font-size:12px;color:var(--muted);">·</span>
+            <span style="font-size:12px;color:${p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'var(--muted)'};">${p.stock===0?'Esgotado':p.stock+' un.'}</span>
+            <span style="font-size:12px;color:var(--muted);">· ${p.sales} vendas</span>
+          </div>
+          <div class="sp-stock-bar"><div class="sp-stock-fill" style="width:${Math.min(100,p.stock*2)}%;background:${p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'var(--teal)'}"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+          <span class="badge ${p.status==='active'?'b-teal':p.status==='sold_out'?'b-coral':'b-ocean'}" style="font-size:10px;">${p.status==='active'?'Ativo':p.status==='sold_out'?'Esgotado':'Pausado'}</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-icon btn-sand" style="width:32px;height:32px;border-radius:8px;" onclick="editSelProd(${p.id})">✏️</button>
+            <button class="btn btn-icon btn-sand" style="width:32px;height:32px;border-radius:8px;" onclick="toggleSelProd(${p.id})">${p.status==='active'?'⏸':'▶️'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterSProd(q) {
+  const list = sellerProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
+  renderSellerProducts(list);
+}
+
+// ── RENDER: QUICK PRODUCTS (seller home) ───────────────────────────────────
+function renderQuickProducts() {
+  const el = document.getElementById('quick-products');
+  if (!el) return;
+  el.innerHTML = sellerProducts.slice(0,4).map((p,i) => `
+    <div class="sp-row" style="padding:12px 14px;${i===3?'border-bottom:none;':''}">
+      <div class="sp-thumb" style="background:${typeBg(p.type)};width:40px;height:40px;border-radius:10px;">${p.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;">${p.name}</div>
+        <div style="font-size:11px;color:${p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'var(--muted)'};">${p.stock===0?'Esgotado':p.stock+' un.'} · ${p.sales} vendas</div>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:var(--teal);">R$${p.price}</span>
+    </div>
+  `).join('');
+}
+
+// ── RENDER: ORDERS ─────────────────────────────────────────────────────────
+function renderOrders(filter) {
+  currentOrderFilter = filter;
+  const el = document.getElementById('orders-render');
+  if (!el) return;
+  const list = filter === 'all' ? ordersData : ordersData.filter(o => o.status === filter);
+  const sLabel = {pending:'Pendente',confirmed:'Confirmado',shipped:'Enviado',delivered:'Entregue'};
+  const sBadge = {pending:'b-amber',confirmed:'b-teal',shipped:'b-ocean',delivered:'b-teal'};
+  el.innerHTML = list.map(o => `
+    <div class="ocard ${o.status}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div><span style="font-size:13px;font-weight:500;">#${o.id}</span><span style="font-size:11px;color:var(--muted);margin-left:8px;">${o.time}</span></div>
+        <span class="badge ${sBadge[o.status]||'b-ocean'}">${sLabel[o.status]||o.status}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="background:var(--sand);border-radius:8px;padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:5px;">${o.emoji} ${o.product}</div>
+        <div style="background:var(--sand);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted);">📦 ${o.delivery}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:15px;font-weight:600;">R$ ${o.total}</div><div style="font-size:11px;color:var(--muted);">${o.buyer}</div></div>
+        <div style="display:flex;gap:8px;">
+          ${o.status==='pending'?`<button class="btn btn-teal btn-sm" onclick="confirmOrd('${o.id}')">✓ Confirmar</button>`:''}
+          ${o.status==='confirmed'?`<button class="btn btn-sm btn-ghost" onclick="shipOrd('${o.id}')">🚚 Despachar</button>`:''}
+          ${o.status==='shipped'?`<button class="btn btn-sand btn-sm">📍 Rastrear</button>`:''}
+        </div>
+      </div>
+    </div>
+  `).join('') || `<div style="text-align:center;padding:40px;color:var(--muted);">Nenhum pedido nesta categoria.</div>`;
+}
+
+function filterOrds(filter, btn) {
+  document.querySelectorAll('#s-seller-orders .cpill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderOrders(filter);
+}
+
+function confirmOrd(id) {
+  const o = ordersData.find(x => x.id === id);
+  if (o) o.status = 'confirmed';
+  renderOrders(currentOrderFilter);
+  showToast('✓ Pedido #' + id + ' confirmado!');
+}
+
+function shipOrd(id) {
+  const o = ordersData.find(x => x.id === id);
+  if (o) o.status = 'shipped';
+  renderOrders(currentOrderFilter);
+  showToast('🚚 Pedido #' + id + ' despachado!', '🚚');
+}
+
+// ── RENDER: STOCK ──────────────────────────────────────────────────────────
+function renderStock() {
+  const el = document.getElementById('stock-list');
+  if (!el) return;
+  el.innerHTML = sellerProducts.map((p,i) => {
+    const pct = Math.min(100,(p.stock/30)*100);
+    const col = p.stock===0?'var(--coral)':p.stock<5?'var(--amber)':'var(--teal)';
+    return `
+      <div class="sp-row" style="padding:12px 14px;${i===sellerProducts.length-1?'border-bottom:none;':''}">
+        <div class="sp-thumb" style="background:${typeBg(p.type)};width:40px;height:40px;border-radius:10px;">${p.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;">${p.name}</div>
+          <div class="sp-stock-bar" style="margin-top:4px;width:100%;"><div class="sp-stock-fill" style="width:${pct}%;background:${col};"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-sand btn-sm" style="width:30px;height:30px;padding:0;border-radius:8px;" onclick="adjStock(${p.id},-1)">−</button>
+          <span style="font-size:14px;font-weight:600;color:${col};min-width:28px;text-align:center;">${p.stock}</span>
+          <button class="btn btn-teal btn-sm" style="width:30px;height:30px;padding:0;border-radius:8px;" onclick="adjStock(${p.id},1)">+</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function adjStock(id, d) {
+  const p = sellerProducts.find(x => x.id === id);
+  if (!p) return;
+  p.stock = Math.max(0, p.stock + d);
+  if (p.stock === 0) p.status = 'sold_out';
+  else if (p.status === 'sold_out') p.status = 'active';
+  renderStock();
+  showToast(`📦 ${p.name}: ${p.stock} un.`, '📦');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+renderSellerProducts(sellerProducts);
+renderQuickProducts();
+renderOrders('all');
+renderStock();
+</script>
+</body>
+</html>
