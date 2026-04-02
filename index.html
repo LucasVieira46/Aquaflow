@@ -2,10 +2,6 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0A2540">
-<script type="module" src="/firebase-config.js"></script>
-<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AquaFlow</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
@@ -347,8 +343,8 @@ body{
       <div class="onb-emoji">🐠</div>
       <h1 class="onb-title">Bem-vindo ao AquaFlow</h1>
       <p class="onb-sub">Gerencie seus aquários, compre produtos e conecte-se com a comunidade. Lojistas também podem vender aqui!</p>
-      <button class="btn btn-teal btn-full" style="font-size:15px;padding:16px;" onclick="go('s-home')">Sou aquarista</button>
-      <button class="btn btn-full" style="background:rgba(255,255,255,.12);color:#fff;margin-top:10px;font-size:15px;padding:16px;" onclick="go('s-seller-home')">Sou lojista / vendedor</button>
+      <button class="btn btn-teal btn-full" style="font-size:15px;padding:16px;" id="btn-aquarista" onclick="handleLogin('s-home')">Sou aquarista</button>
+      <button class="btn btn-full" style="background:rgba(255,255,255,.12);color:#fff;margin-top:10px;font-size:15px;padding:16px;" id="btn-lojista" onclick="handleLogin('s-seller-home')">Sou lojista / vendedor</button>
       <p style="font-size:12px;color:rgba(255,255,255,.35);margin-top:16px;">Você pode alternar entre os modos a qualquer hora</p>
     </div>
   </div>
@@ -1596,6 +1592,64 @@ renderSellerProducts(sellerProducts);
 renderQuickProducts();
 renderOrders('all');
 renderStock();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAw1h1K-gSdIiTJy8fUeBy1c8BsOLvNgS4",
+  authDomain: "aquaflow-61d9a.firebaseapp.com",
+  projectId: "aquaflow-61d9a",
+  storageBucket: "aquaflow-61d9a.firebasestorage.app",
+  messagingSenderId: "454757999714",
+  appId: "1:454757999714:web:6385d2c5c0e131c071dd3b"
+});
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+let destino = 's-home';
+
+window.handleLogin = async function(dest) {
+  destino = dest;
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    const ref = doc(db, "usuarios", user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      await setDoc(ref, {
+        nome: user.displayName,
+        email: user.email,
+        foto: user.photoURL,
+        criadoEm: new Date().toISOString(),
+        plano: "free"
+      });
+    }
+    atualizarUI(user);
+    go(destino);
+    showToast('✓ Bem-vindo, ' + (user.displayName||'').split(' ')[0] + '!');
+  } catch(e) {
+    go(destino);
+  }
+};
+
+function atualizarUI(user) {
+  const nomeEl = document.querySelector('#s-home .hdr [style*="BOM DIA"]');
+  if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'').split(' ')[0].toUpperCase() + ' 👋';
+  const nomePerfilEl = document.querySelector('#s-profile .hdr [style*="DM Serif Display"]');
+  if (nomePerfilEl) nomePerfilEl.textContent = user.displayName || 'Meu perfil';
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) atualizarUI(user);
+});
 </script>
 </body>
 </html>
