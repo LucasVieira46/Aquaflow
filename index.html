@@ -1593,7 +1593,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 window.handleLogin = async function(dest) {
-  localStorage.setItem('aquaflow_dest', dest);
+  sessionStorage.setItem('aquaflow_dest', dest);
   await signInWithRedirect(auth, provider);
 };
 
@@ -1620,22 +1620,20 @@ getRedirectResult(auth).then(async result => {
       });
     }
     atualizarUI(user);
-    const dest = localStorage.getItem('aquaflow_dest') || 's-home';
-    localStorage.removeItem('aquaflow_dest');
-    go(dest);
-    showToast('✓ Bem-vindo, ' + (user.displayName||'').split(' ')[0] + '!');
+    const dest = sessionStorage.getItem('aquaflow_dest') || 's-home';
+    sessionStorage.removeItem('aquaflow_dest');
+    setTimeout(() => { go(dest); showToast('✓ Bem-vindo, ' + (user.displayName||'').split(' ')[0] + '!'); }, 300);
   }
 }).catch(err => console.error(err));
 
 onAuthStateChanged(auth, user => {
   if (user) {
     atualizarUI(user);
-    // Se ainda estiver na tela de onboarding, vai para o home
     const onb = document.getElementById('s-onb');
     if (onb && onb.classList.contains('active')) {
-      const dest = localStorage.getItem('aquaflow_dest') || 's-home';
-      localStorage.removeItem('aquaflow_dest');
-      go(dest);
+      const dest = sessionStorage.getItem('aquaflow_dest') || 's-home';
+      sessionStorage.removeItem('aquaflow_dest');
+      setTimeout(() => go(dest), 500);
     }
   }
 });
