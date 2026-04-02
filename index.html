@@ -1628,7 +1628,16 @@ getRedirectResult(auth).then(async result => {
 }).catch(err => console.error(err));
 
 onAuthStateChanged(auth, user => {
-  if (user) atualizarUI(user);
+  if (user) {
+    atualizarUI(user);
+    // Se ainda estiver na tela de onboarding, vai para o home
+    const onb = document.getElementById('s-onb');
+    if (onb && onb.classList.contains('active')) {
+      const dest = localStorage.getItem('aquaflow_dest') || 's-home';
+      localStorage.removeItem('aquaflow_dest');
+      go(dest);
+    }
+  }
 });
 </script>
 </body>
