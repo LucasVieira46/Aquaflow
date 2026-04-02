@@ -1596,7 +1596,7 @@ renderStock();
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged }
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc }
   from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -1614,12 +1614,21 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-let destino = 's-home';
-
 window.handleLogin = async function(dest) {
-  destino = dest;
-  try {
-    const result = await signInWithPopup(auth, provider);
+  localStorage.setItem('aquaflow_dest', dest);
+  await signInWithRedirect(auth, provider);
+};
+
+function atualizarUI(user) {
+  const nomeEl = document.querySelector('#s-home .hdr [style*="BOM DIA"]');
+  if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'').split(' ')[0].toUpperCase() + ' 👋';
+  const nomePerfilEl = document.querySelector('#s-profile .hdr [style*="DM Serif Display"]');
+  if (nomePerfilEl) nomePerfilEl.textContent = user.displayName || 'Meu perfil';
+}
+
+// Verifica resultado do redirect ao carregar
+getRedirectResult(auth).then(async result => {
+  if (result && result.user) {
     const user = result.user;
     const ref = doc(db, "usuarios", user.uid);
     const snap = await getDoc(ref);
@@ -1633,19 +1642,12 @@ window.handleLogin = async function(dest) {
       });
     }
     atualizarUI(user);
-    go(destino);
+    const dest = localStorage.getItem('aquaflow_dest') || 's-home';
+    localStorage.removeItem('aquaflow_dest');
+    go(dest);
     showToast('✓ Bem-vindo, ' + (user.displayName||'').split(' ')[0] + '!');
-  } catch(e) {
-    go(destino);
   }
-};
-
-function atualizarUI(user) {
-  const nomeEl = document.querySelector('#s-home .hdr [style*="BOM DIA"]');
-  if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'').split(' ')[0].toUpperCase() + ' 👋';
-  const nomePerfilEl = document.querySelector('#s-profile .hdr [style*="DM Serif Display"]');
-  if (nomePerfilEl) nomePerfilEl.textContent = user.displayName || 'Meu perfil';
-}
+}).catch(err => console.error(err));
 
 onAuthStateChanged(auth, user => {
   if (user) atualizarUI(user);
