@@ -304,7 +304,7 @@ body{
 .ocard.confirmed{border-left-color:var(--teal);}
 .ocard.shipped{border-left-color:var(--ocean);}
 
-/* ── SIDE PANEL (outside phone) ── */
+
 .side-panel{max-width:220px;display:flex;flex-direction:column;gap:12px;}
 .side-card{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:16px;padding:16px;border:1px solid rgba(255,255,255,.15);}
 .side-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;}
@@ -357,7 +357,7 @@ body{
     <div class="hdr anim">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
         <div>
-          <div style="font-size:11px;color:var(--teal-l);font-weight:500;letter-spacing:.05em;">BOM DIA, CARLOS 👋</div>
+          <div id="greeting" style="font-size:11px;color:var(--teal-l);font-weight:500;letter-spacing:.05em;">BOM DIA 👋</div>
           <div class="hdr-title">AquaFlow</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -1645,8 +1645,8 @@ async function salvarUsuario(user) {
 }
 
 function atualizarUI(user) {
-  const nomeEl = document.querySelector('#s-home .hdr [style*="BOM DIA"]');
-  if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'').split(' ')[0].toUpperCase() + ' 👋';
+  const nomeEl = document.getElementById('greeting');
+  if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'amigo').split(' ')[0].toUpperCase() + ' 👋';
   const nomePerfilEl = document.querySelector('#s-profile .hdr [style*="DM Serif"]');
   if (nomePerfilEl) nomePerfilEl.textContent = user.displayName || 'Meu perfil';
 }
