@@ -368,27 +368,22 @@ body{
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <div class="ppill" onclick="go('s-tank')">
-          <div class="ppill-label">pH</div><div class="ppill-value">7.2</div><div class="ppill-status">✓ Normal</div>
+      <div id="home-params" style="display:flex;gap:8px;" onclick="go('s-tanks')">
+        <div class="ppill">
+          <div class="ppill-label">pH</div><div class="ppill-value" style="font-size:13px;">--</div><div class="ppill-status">Sem dados</div>
         </div>
-        <div class="ppill" onclick="go('s-tank')">
-          <div class="ppill-label">Temp.</div><div class="ppill-value">26°</div><div class="ppill-status">✓ Ideal</div>
+        <div class="ppill">
+          <div class="ppill-label">Temp.</div><div class="ppill-value" style="font-size:13px;">--</div><div class="ppill-status">Sem dados</div>
         </div>
-        <div class="ppill" onclick="go('s-tank')">
-          <div class="ppill-label">NH₃</div><div class="ppill-value">0.0</div><div class="ppill-status">✓ Seguro</div>
+        <div class="ppill">
+          <div class="ppill-label">NH₃</div><div class="ppill-value" style="font-size:13px;">--</div><div class="ppill-status">Sem dados</div>
         </div>
       </div>
     </div>
     <div class="scroll">
       <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
 
-        <!-- Alert -->
-        <div class="alert-b warn anim2" onclick="go('s-tank')">
-          <div class="alert-dot" style="background:var(--amber);"></div>
-          <div style="flex:1;"><div style="font-size:12px;font-weight:500;color:#8B5E0A;">Troca de água em 2 dias</div><div style="font-size:11px;color:#A07030;">Aquário Principal · 240L Plantado</div></div>
-          <span style="color:var(--amber);">›</span>
-        </div>
+
 
         <!-- Meus aquários -->
         <div class="anim3">
@@ -398,10 +393,10 @@ body{
           </div>
           <div style="display:flex;gap:10px;">
             <div id="home-tanks" style="flex:1;">
-              <div style="text-align:center;padding:20px;background:rgba(255,255,255,.08);border-radius:var(--r);">
+              <div style="text-align:center;padding:20px;background:rgba(255,255,255,.08);border-radius:var(--r);" onclick="go('s-tanks')">
                 <div style="font-size:32px;margin-bottom:8px;">🐠</div>
-                <div style="font-size:12px;color:rgba(255,255,255,.7);">Nenhum aquário ainda</div>
-                <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-top:10px;" onclick="go('s-tanks')">+ Cadastrar</button>
+                <div style="font-size:12px;color:rgba(255,255,255,.8);font-weight:500;">Nenhum aquário cadastrado</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">Toque para adicionar o primeiro</div>
               </div>
             </div>
           </div>
@@ -474,7 +469,7 @@ body{
 
   <!-- ══════════════════════ TANKS LIST ══════════════════════ -->
   <div class="screen" id="s-tanks">
-    <div class="hdr anim"><div class="hdr-title">Meus aquários</div><div class="hdr-sub">3 aquários cadastrados</div></div>
+    <div class="hdr anim"><div class="hdr-title">Meus aquários</div><div class="hdr-sub" id="tanks-count">Nenhum aquário ainda</div></div>
     <div class="scroll">
       <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
         <div id="tanks-list" class="anim">
@@ -785,7 +780,7 @@ body{
             <div>
               <div style="font-size:10px;color:var(--teal-l);font-weight:500;letter-spacing:.04em;margin-bottom:3px;">PLANO ATUAL</div>
               <div style="font-size:20px;font-weight:600;">Free</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;">2/2 aquários usados</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;" id="plan-usage">Plano gratuito</div>
             </div>
             <button class="btn btn-teal btn-sm">Upgrade Premium</button>
           </div>
