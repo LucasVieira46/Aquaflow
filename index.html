@@ -358,7 +358,7 @@ body{
     <div class="hdr anim">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
         <div>
-          <div id="greeting" style="font-size:11px;color:var(--teal-l);font-weight:500;letter-spacing:.05em;">BOM DIA 👋</div>
+          <div id="greeting" style="font-size:11px;color:var(--teal-l);font-weight:500;letter-spacing:.05em;">OLÁ 👋</div>
           <div class="hdr-title">AquaFlow</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -397,19 +397,12 @@ body{
             <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="go('s-tanks')">Ver todos</span>
           </div>
           <div style="display:flex;gap:10px;">
-            <div class="card-ocean" style="flex:1;cursor:pointer;" onclick="go('s-tank')">
-              <div style="font-size:28px;margin-bottom:8px;">🌿</div>
-              <div style="font-size:13px;font-weight:500;">Principal</div>
-              <div style="font-size:11px;color:var(--teal-l);margin-top:2px;">240L · 12 esp.</div>
-              <div class="hbar" style="margin-top:10px;"><div class="hbar-fill" style="width:78%;background:var(--teal);"></div></div>
-              <div style="font-size:10px;color:var(--teal-l);margin-top:3px;">Saúde 78%</div>
-            </div>
-            <div class="card-ocean" style="flex:1;cursor:pointer;background:linear-gradient(135deg,#2A1A40,#3D2560);" onclick="go('s-tank')">
-              <div style="font-size:28px;margin-bottom:8px;">🐟</div>
-              <div style="font-size:13px;font-weight:500;">Escritório</div>
-              <div style="font-size:11px;color:rgba(200,180,255,.7);margin-top:2px;">60L · 4 esp.</div>
-              <div class="hbar" style="margin-top:10px;background:rgba(255,255,255,.15);"><div class="hbar-fill" style="width:92%;background:#B39DDB;"></div></div>
-              <div style="font-size:10px;color:rgba(200,180,255,.7);margin-top:3px;">Saúde 92%</div>
+            <div id="home-tanks" style="flex:1;">
+              <div style="text-align:center;padding:20px;background:rgba(255,255,255,.08);border-radius:var(--r);">
+                <div style="font-size:32px;margin-bottom:8px;">🐠</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.7);">Nenhum aquário ainda</div>
+                <button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;margin-top:10px;" onclick="go('s-tanks')">+ Cadastrar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -484,20 +477,12 @@ body{
     <div class="hdr anim"><div class="hdr-title">Meus aquários</div><div class="hdr-sub">3 aquários cadastrados</div></div>
     <div class="scroll">
       <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
-        <div class="anim" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
-          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#0E3A5C,#1D9E75);display:flex;align-items:center;justify-content:center;font-size:26px;">🌿</div>
-          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Aquário Principal</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">240L · Plantado · 12 espécies</div><div class="hbar"><div class="hbar-fill" style="width:78%;background:var(--teal);"></div></div></div>
-          <span class="badge b-teal">78%</span>
-        </div>
-        <div class="anim2" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
-          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#2A1A40,#7B1FA2);display:flex;align-items:center;justify-content:center;font-size:26px;">🐟</div>
-          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Escritório</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">60L · Nano · 4 espécies</div><div class="hbar"><div class="hbar-fill" style="width:92%;background:var(--teal);"></div></div></div>
-          <span class="badge b-teal">92%</span>
-        </div>
-        <div class="anim3" style="display:flex;align-items:center;gap:12px;background:var(--white);border-radius:var(--r-sm);padding:14px;cursor:pointer;box-shadow:var(--shadow);" onclick="go('s-tank')">
-          <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#0D47A1,#0288D1);display:flex;align-items:center;justify-content:center;font-size:26px;">🪸</div>
-          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">Marinho</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">120L · Marinho · 6 espécies</div><div class="hbar"><div class="hbar-fill" style="width:61%;background:var(--amber);"></div></div></div>
-          <span class="badge b-amber">61%</span>
+        <div id="tanks-list" class="anim">
+          <div style="text-align:center;padding:40px 20px;">
+            <div style="font-size:52px;margin-bottom:12px;">🐠</div>
+            <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Nenhum aquário ainda</div>
+            <div style="font-size:13px;color:var(--muted);">Cadastre seu primeiro aquário!</div>
+          </div>
         </div>
         <div class="anim4">
           <button class="btn btn-full" style="border:2px dashed var(--sand-d);background:transparent;color:var(--muted);border-radius:var(--r-sm);" onclick="openModal('m-new-tank')">+ Cadastrar novo aquário</button>
@@ -783,14 +768,14 @@ body{
   <!-- ══════════════════════ PROFILE ══════════════════════ -->
   <div class="screen" id="s-profile">
     <div class="hdr" style="text-align:center;padding-bottom:24px;">
-      <div style="width:72px;height:72px;border-radius:24px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;margin:0 auto 12px;">CL</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;">Carlos Lima</div>
-      <div style="font-size:12px;color:var(--teal-l);margin-top:3px;">Aquarista há 6 anos · SP</div>
+      <div id="profile-avatar" style="width:72px;height:72px;border-radius:24px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;margin:0 auto 12px;">👤</div>
+      <div id="profile-name" style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;">Meu perfil</div>
+      <div id="profile-sub" style="font-size:12px;color:var(--teal-l);margin-top:3px;">Aquarista</div>
       <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;">
-        <div class="stat-mini"><div class="stat-mini-val">3</div><div class="stat-mini-lbl">Aquários</div></div>
-        <div class="stat-mini"><div class="stat-mini-val">22</div><div class="stat-mini-lbl">Espécies</div></div>
-        <div class="stat-mini"><div class="stat-mini-val">48</div><div class="stat-mini-lbl">Posts</div></div>
-        <div class="stat-mini"><div class="stat-mini-val">127</div><div class="stat-mini-lbl">Seguidores</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-aquarios">0</div><div class="stat-mini-lbl">Aquários</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-especies">0</div><div class="stat-mini-lbl">Espécies</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-posts">0</div><div class="stat-mini-lbl">Posts</div></div>
+        <div class="stat-mini"><div class="stat-mini-val" id="stat-seguidores">0</div><div class="stat-mini-lbl">Seguidores</div></div>
       </div>
     </div>
     <div class="scroll">
@@ -1625,10 +1610,28 @@ async function salvarUsuario(user) {
 }
 
 function atualizarUI(user) {
+  // Greeting
   const nomeEl = document.getElementById('greeting');
   if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'amigo').split(' ')[0].toUpperCase() + ' 👋';
-  const nomePerfilEl = document.querySelector('#s-profile .hdr [style*="DM Serif"]');
+  // Profile name
+  const nomePerfilEl = document.getElementById('profile-name');
   if (nomePerfilEl) nomePerfilEl.textContent = user.displayName || 'Meu perfil';
+  // Profile sub
+  const subEl = document.getElementById('profile-sub');
+  if (subEl) subEl.textContent = user.email || 'Aquarista';
+  // Profile avatar
+  const avatarEl = document.getElementById('profile-avatar');
+  if (avatarEl) {
+    if (user.photoURL) {
+      avatarEl.innerHTML = '';
+      avatarEl.style.backgroundImage = 'url(' + user.photoURL + ')';
+      avatarEl.style.backgroundSize = 'cover';
+      avatarEl.style.backgroundPosition = 'center';
+    } else {
+      const initials = (user.displayName||'U').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+      avatarEl.textContent = initials;
+    }
+  }
 }
 
 function getCookie(name) {
