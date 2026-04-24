@@ -323,39 +323,13 @@ body{
 /* ── STARS ── */
 .stars{color:var(--amber);font-size:13px;letter-spacing:1px;}
 
-/* ── TOUCH FIX GLOBAL ── */
-* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-button, a, .bni, .btn, .card, .pcard, .ppill, .cpill, .alert-b, .post-act, .nav-item {
-  touch-action: manipulation;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-}
-.bni {
-  min-width: 64px !important;
-  min-height: 64px !important;
-  padding: 12px 8px !important;
-  flex: 1 !important;
-}
-.bnav {
-  height: 88px !important;
-  padding: 4px 0 18px !important;
-  position: relative;
-  z-index: 50;
-}
-.bni-icon { font-size: 24px !important; }
-.bni-label { font-size: 11px !important; }
 
-
-/* ── TOUCH FIX 2 ── */
-.bni:active { transform: none !important; }
-.bni-icon { pointer-events: none; display: block; }
-.bni-label { pointer-events: none; display: block; }
-.bni span { pointer-events: none; }
-.bni * { pointer-events: none; }
-.btn:active { transform: none !important; }
-.screen { pointer-events: auto; }
-
+/* ── TOUCH ── */
+* { -webkit-tap-highlight-color: transparent; }
+.bnav { height:82px !important; padding:4px 0 14px !important; }
+.bni { flex:1; padding:8px 4px !important; min-height:58px !important; touch-action:manipulation; }
+.bni-icon { font-size:22px; pointer-events:none; }
+.bni-label { font-size:10px; pointer-events:none; }
 </style>
 </head>
 <body>
