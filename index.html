@@ -346,6 +346,16 @@ button, a, .bni, .btn, .card, .pcard, .ppill, .cpill, .alert-b, .post-act, .nav-
 .bni-icon { font-size: 24px !important; }
 .bni-label { font-size: 11px !important; }
 
+
+/* ── TOUCH FIX 2 ── */
+.bni:active { transform: none !important; }
+.bni-icon { pointer-events: none; display: block; }
+.bni-label { pointer-events: none; display: block; }
+.bni span { pointer-events: none; }
+.bni * { pointer-events: none; }
+.btn:active { transform: none !important; }
+.screen { pointer-events: auto; }
+
 </style>
 </head>
 <body>
