@@ -322,6 +322,30 @@ body{
 
 /* ── STARS ── */
 .stars{color:var(--amber);font-size:13px;letter-spacing:1px;}
+
+/* ── TOUCH FIX GLOBAL ── */
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+button, a, .bni, .btn, .card, .pcard, .ppill, .cpill, .alert-b, .post-act, .nav-item {
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bni {
+  min-width: 64px !important;
+  min-height: 64px !important;
+  padding: 12px 8px !important;
+  flex: 1 !important;
+}
+.bnav {
+  height: 88px !important;
+  padding: 4px 0 18px !important;
+  position: relative;
+  z-index: 50;
+}
+.bni-icon { font-size: 24px !important; }
+.bni-label { font-size: 11px !important; }
+
 </style>
 </head>
 <body>
