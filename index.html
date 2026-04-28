@@ -719,7 +719,7 @@ body{
       </div>
     </div>
     <div class="scroll">
-      <div style="padding:16px;">
+      <div id="community-feed" style="padding:16px;">
         <div class="post anim">
           <div class="post-hdr">
             <div class="avatar av-teal">MF</div>
@@ -1605,6 +1605,7 @@ async function salvarUsuario(user) {
 }
 
 function atualizarUI(user) {
+  window._currentUser = user;
   // Greeting
   const nomeEl = document.getElementById('greeting');
   if (nomeEl) nomeEl.textContent = 'OLÁ, ' + (user.displayName||'amigo').split(' ')[0].toUpperCase() + ' 👋';
@@ -1646,7 +1647,16 @@ getRedirectResult(auth).then(async result => {
   }
 }).catch(err => console.error(err));
 
-onAuthStateChanged(auth, user => { if (user) atualizarUI(user); });
+onAuthStateChanged(auth, user => {
+  if (user) {
+    atualizarUI(user);
+    // Se estiver na tela de onboarding, vai direto para o home
+    const onb = document.getElementById('s-onb');
+    if (onb && onb.classList.contains('active')) {
+      go('s-home');
+    }
+  }
+});
 </script>
 </body>
 </html>
