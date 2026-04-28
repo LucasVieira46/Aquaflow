@@ -1115,13 +1115,22 @@ body{
     <div class="modal-sheet" onclick="e=>e.stopPropagation()">
       <div class="modal-handle"></div>
       <div class="modal-title">Nova publicação</div>
-      <div class="fgroup"><textarea class="ftextarea" placeholder="Compartilhe uma experiência, dica ou foto do seu aquário..."></textarea></div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <button class="btn btn-sand btn-sm" style="flex:1;">📷 Foto</button>
-        <button class="btn btn-sand btn-sm" style="flex:1;">🐠 Aquário</button>
-        <button class="btn btn-sand btn-sm" style="flex:1;"># Grupo</button>
+      <div class="fgroup">
+        <textarea class="ftextarea" id="post-text" placeholder="Compartilhe uma experiência, dica ou foto do seu aquário..." style="min-height:100px;"></textarea>
       </div>
-      <button class="btn btn-teal btn-full" onclick="closeModalById('m-new-post');showToast('🚀 Post publicado!')">Publicar</button>
+      <!-- Preview da imagem -->
+      <div id="post-img-preview" style="display:none;margin-bottom:12px;">
+        <img id="post-preview-img" style="width:100%;border-radius:12px;max-height:180px;object-fit:cover;">
+        <button onclick="document.getElementById('post-img-preview').style.display='none';" style="background:none;border:none;font-size:12px;color:var(--muted);margin-top:4px;cursor:pointer;">✕ Remover foto</button>
+      </div>
+      <!-- Botão foto com input file real -->
+      <div style="margin-bottom:14px;">
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:50px;background:var(--sand-d);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;touch-action:manipulation;">
+          📷 Adicionar foto
+          <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="previewPostImg(this)">
+        </label>
+      </div>
+      <button class="btn btn-teal btn-full" onclick="publishPost()">🚀 Publicar</button>
     </div>
   </div>
 
@@ -1544,6 +1553,68 @@ function adjStock(id, d) {
   else if (p.status === 'sold_out') p.status = 'active';
   renderStock();
   showToast(`📦 ${p.name}: ${p.stock} un.`, '📦');
+}
+
+
+// ── COMMUNITY FUNCTIONS ───────────────────────────────────────────────────────
+function previewPostImg(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('post-preview-img').src = e.target.result;
+      document.getElementById('post-img-preview').style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function publishPost() {
+  const textEl = document.getElementById('post-text');
+  const text = textEl ? textEl.value.trim() : '';
+  if (!text) { showToast('⚠ Escreva algo antes de publicar', '⚠'); return; }
+
+  const imgEl = document.getElementById('post-preview-img');
+  const hasImg = imgEl && imgEl.src && imgEl.src.startsWith('data:');
+
+  const user = window._currentUser;
+  const name = user ? (user.displayName || 'Você') : 'Você';
+  const initials = name.split(' ').map(function(n){return n[0];}).join('').substring(0,2).toUpperCase();
+  const photoURL = user ? user.photoURL : null;
+
+  const postDiv = document.createElement('div');
+  postDiv.className = 'post';
+  postDiv.style.animation = 'slideUp .4s ease';
+
+  const avatarStyle = photoURL
+    ? 'background-image:url(' + photoURL + ');background-size:cover;background-position:center;font-size:0;'
+    : '';
+
+  const imgHTML = hasImg
+    ? '<div style="border-radius:10px;overflow:hidden;margin-bottom:12px;"><img src="' + imgEl.src + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;display:block;"></div>'
+    : '';
+
+  postDiv.innerHTML =
+    '<div class="post-hdr">' +
+      '<div class="avatar av-teal" style="' + avatarStyle + '">' + (photoURL ? '' : initials) + '</div>' +
+      '<div><div class="post-name">' + name + '</div><div class="post-meta">Agora</div></div>' +
+    '</div>' +
+    '<p class="post-text">' + text + '</p>' +
+    imgHTML +
+    '<div class="post-actions">' +
+      '<button class="post-act">❤️ 0</button>' +
+      '<button class="post-act">💬 0 comentários</button>' +
+    '</div>';
+
+  const feed = document.querySelector('#s-community .scroll > div');
+  if (feed) feed.insertBefore(postDiv, feed.firstChild);
+
+  // Reset form
+  if (textEl) textEl.value = '';
+  if (imgEl) imgEl.src = '';
+  document.getElementById('post-img-preview').style.display = 'none';
+
+  closeModalById('m-new-post');
+  showToast('🚀 Post publicado!', '🚀');
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
